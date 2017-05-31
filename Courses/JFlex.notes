@@ -1,0 +1,467 @@
+JFlex Tutorial
+----------------
+2017/05/05
+
+
+Introduction:
+----------------
+	it recieves a ".jflex" file which consists "Regular Expressions" & convert it to a "Java Program" which can do our tasks based on the regular expressions
+
+
+
+
+Basic Rules of Regular Expressions:
+------------------------------------------------
+# some rules may be used only in JFlex
+------------------------------------------------
+	1. Regular Expressions describe sequences of ASCII characters (20 operators)
+		-> " \ [ ] ^ - ? . * + | ( ) $ / { } % < >
+
+	2. Letters & numbers in the input string are described by the characters themselves
+		! case-sensitive --> "xyz" is not equal to "Xyz"
+		-> "  val1  " :: the input sequence "v" "a" "l" "1"
+
+
+	3. Non alphabetical characters are written in " ", avoid ambiguities with operators
+		-> "  xyz"++"  " :: the input sequence "x" "y" "z" "++"
+
+	4. Non alphabetical characters can be also preceded by the "\" character
+		-> "  xyz\+\+  " :: the input sequence ‘x’ ‘y’ ‘z’ ‘+’ ‘+’
+		-> For operators: \" \\ \[ \] \^ \- \? \. \* \+ \| \( \) \$ \/ \{ \} \% \< \>
+
+		-> if "\" is used in front of a character:
+				\a										--> "a"
+				\b										--> word boundary
+				\c										--> "c"
+				\d										--> digit
+				\e										--> "e"
+				\f 										--> form feed
+				\g\h\i\j\k\l\m							--> "g" "h" "i" "j" "k" "l" "m"
+				\n										--> line feed
+				\o\p\q									--> "o" "p" "q"
+				\r										--> carrige return
+				\s										--> white space
+				\t										--> tab
+				\u										--> "u"
+				\v										--> vertical tab
+				\w										--> word
+				\x\y\z 									--> "x" "y" "z"
+
+				\A										--> "A"
+				\B										--> non-word boundary
+				\C										--> "C"
+				\D										--> non-digit
+				\E\F\G\H\I\J\K\L\M\N\O\P\Q\R			--> "EFGHIJKLMNOPQR"
+				\S										--> non-white space
+				\T\U\V									--> "TUV"
+				\W										--> non-word
+				\X\Y\Z									--> "XYZ"
+
+
+	5. Character classes are identified by square brackets [ ]:
+		-> "[0123456789]" :: one of the digits inside brackets
+
+	6. In character classes, the "-" character is used to describe a range of characters
+		-> "[0-9]" 			:: a digit between 0 & 9
+		-> "[a-z]" 			:: any lower case letter
+		-> "[a-zA-Z0-9]" 	:: both lower case & upper case letters, as well as numbers
+
+	7. "-" in a character class, is either the first or the last character within the brackets
+		-> "[-+0-9]" :: a digit or a +/- sign in the input string
+
+	8. "^" at the beginning of a character class identifies a "negated character class"
+		-> "[^0-9]" :: any character except digits
+
+	9. The symbol "." (dot) identifies any character except newline
+
+	10. The newline character is described by the following regular expression
+		-> \n|\r|\r\n 		// "\r" line feed, "\n" carrige return
+		
+		. JFlex is written in Java, so generated scanners must be portable on both Windows & Linux operating systems. Note:
+			-> \n | \r | \r\n 	:: one newline
+			-> [\n\r]+ 			:: one or more newlines: \n\n\n\r\r...
+
+	11. The symbol "\t" identifies the tabulation character
+
+	12. "?" indicates that the preceding expression is optional
+		-> "ab?c" :: both ac & abc
+
+	13. "*" indicates that the preceding expression can be repeated 0 or more times
+		-> "ab*c" :: all the sequences starting with a, terminating with c and with any number of b’s in between
+
+	14. "+" indicates that the preceding expression can be repeated 1 or more times
+		-> "ab+c" :: all the sequences starting with a, terminating with c and with at least 1 b in between.
+
+	15. "{n}" represents n repetitions of the preceding expression
+		-> "ab{3}c" :: the sequence abbbc
+
+	16. "{n,m}" represents a repetition of the precedent expression between a minimum of n and a maximum of m times
+		-> "ab{2,4}c" :: the sequences abbc, abbbc and abbbbc
+
+	17. "|" represents two alternative expressions
+		-> "ab|cd" :: both the sequences ab and cd
+
+	18. "()" are used to express or modify operators priority
+		-> "(ab|cd+)?ef" :: sequences such as ef, abef, cdddef
+
+	19. "." matches any characters except "newline"
+		-> "c.t"  ::  cat, cut, but it wont accept "cast" or "cost"
+
+
+
+Some Examples:
+---------------------
+	Unsigned integer								[0-9]+
+	Unsigned integer without leading zeros		[1-9][0-9]*
+	Signed integer									[+-]?[0-9]+ or ("+"|"-")?[0-9]+
+	
+	Floating point number 				// supports  +/- XX.X | .XX | 0.XX
+		[+-]?([1-9][0-9]* \. [0-9]*)|(\.[0-9]+)|(0\.[0-9]*)
+		 or ("+"|"-")?([1-9][0-9]*"."[0-9]*)|("."[0-9]+)|(0"."[0-9]*)
+
+
+
+
+JFlex Source Code Structure:
+------------------------------------
+	Code section
+	%%
+	Declarations section
+	%%
+	Rules section
+------------------------------------
+	1. The first section "code section" contains the user code and can be empty
+		a. All the code lines present in this section are copied without any modification in the generated scanner.
+		. Ex: 	import java.io.*;
+
+
+	2. The second section "declarations section" contains option and declarations.
+		a. To simplify the use of complex or repetitive regular expressions, it is possible to define identifiers for sub-expressions. The sub-expression can then be used in the rules section, writing its name between braces:
+		. Ex: 	integer = [+-]?[1-9][0-9]* 	// inside declarations section
+				{integer} 						//inside rules section
+					{System.out.print("integer found\n");
+
+		b. "%class className" : it will produce "className.java" file
+			! if this code is not used, the java filename will be "Yylex.java"
+		
+		c. "%standalone" : it will produce "className.java" file as an standalone class than can be used directly with appropriate "input file" as an argument. it has "main(String[] args)" class that can accept input file directly from argument.
+
+		. Java code can be included in the declarations section by writing it between "%{" and "%}".See also "%init{ ... %init}" and "%eof{ …%eof}"
+
+
+	3. The third section "rules section" contains the lexical rules in the form of regular_expression action pairs.
+		. In JFlex, each regular expression is associated to an action, which is executed when the input matches the regular expression.
+		. Actions are constituted by snippets of Java code, written between braces.
+		. The simplest action consists in ignoring the matched string and is expressed by an empty action "{;}"
+		. Ex: 	\n | \r | \r\n
+					{System.out.println("newline found"); }
+
+
+	
+
+Scanner methods and fields accessible in actions:
+-------------------------------------------------------------
+	. String yytext()		Returns the matched string (that`s saved in internal buffer)
+	. int yylength()			Returns the number of matched characters
+	. int yycharat(int pos)	Returns the character at position pos, starts from 0
+	
+	. int yyline
+	. int yycolumn 			Contains the current line and column of input file, respectively. Those variables have a meaningful value only if "%line" and "%column" directives are declared
+
+
+
+
+Compiling steps:
+---------------------
+	. Linux:
+		1. terminal / go to the ".jflex" file path
+		2. jflex flexFile.jflex
+		3. javac generatedClass.java
+		4. java generatedClass <inputFile_1> … <input_file_n>
+	
+		or -> 2 ; 3 ; 4
+
+	
+	. Windows:
+		1. cmd / go to the ".jflex" file path
+		2. -> jflex flexFile.jflex
+		3. -> javac generatedClass.java
+		4. -> java -cp . generatedClass <inputFile_1> … <input_file_n>
+
+		or -> 2 & 3 & 4
+
+
+
+
+Rules:
+------------------------------
+	1. Ambiguous Source
+		a. Longest Match:
+			the initial part of character sequences matched by one regular expression is also matched by another regular expression
+
+		b. First Match:
+			the same character sequence is matched by two distinct regular expressions
+
+	2. Context
+
+	3. Beginning and end of line
+		a. The character "^" at the beginning of a regular expression indicates that the sequence must be found at the beginning of the line. This means that either the character sequence is at the beginning of the input stream, or that the last character previously read was a "newline".
+
+		b. The character "$" at the end of a regular expression indicates that the sequence must be followed by a newline character. By default, the newline is not matched by the regular expression, and thus must be matched by another rule
+			-> "end$" 				:: The characters " 'e' 'n' 'd' " at the end of the line
+			-> "\r | \n | \r\n" 		:: the newline
+
+	4. Sensitivity to the right context
+		The binary operator "/" separates a regular expression from its right context.
+		-> "ab/cd" 	:: "ab", but if and only if is followed by the string "cd"
+		-> "ab$" 		:: is equivalent to "ab / ( \n | \r | \r\n )"
+
+
+	5. Start conditions ! INCLUSIVE STATES !
+		Rule starting with <state> are active only when the scanner is in the state <state>. It behaves like "if condition" and when a special state occurs, special actions are done.
+		
+		. Possible states must be declared in the declarations section using the "%state" keyword
+		. The default state is "YYINITIAL"
+		. The scanner enters a state when "yybegin(state);" is executed. When a state is activated, the state rules are added (inclusive or) to the other scanner base rules.
+		. A state is active until another state is activated. To return to initial condition, one must activate the initial state by means of "yybegin(YYINITIAL);"
+		. A rule can be preceded by one or more state names, separated by a comma, to indicate that it is active in each of the states.
+
+
+		. Ex: if "//" is found, the state is changed to <comment> and by "{yybegin(comment);}" it activates the <comment> state. the state is kept, until "\n|\r|\r\n" is found, wich brings the state to the "initial state" by "{yybegin(YYINITIAL);}"
+		[jflex]
+			%%
+			%state comment
+			%%
+			<comment>\$[a-zA-Z]+[-+] 			{print(yytext());}
+			"//" 									{yybegin(comment);}
+			\n|\r|\r\n 								{yybegin(YYINITIAL);}
+			" " 										{;} /* ignore blanks */
+			\t 										{;} /* ignore tabs    */
+			/* other rules.... */
+		[end]
+
+	
+
+	6. Start conditions ! EXCLUSIVE STATES !
+		A set of rules can be grouped within an exclusive state as well. The "%xstate" keyword defines an exclusive state.
+		
+		. When the scanner enters an exclusive state:
+			a. default rules are disabled,
+			b. only the rules explicitly defined for the state are active.
+			c. In this way, "mini-scanner" that deal with special sections of the input stream, such as comments or strings, can be defined.
+
+		. Ex: In the initial state is count the number of lines by "nl" and when encounters "/*" the <comment> state is activated and ALL Other RULES are ignored and ONLUY rules that have <comment> in the beginning, runs. Inside <comment> state when encounters "*"+"/", it jumps out to the initial state.
+
+		[jflex]
+			%%
+			%standalone
+			%xstate comment
+			%{
+				public int line_num = 1; 						// Java codes
+				public int line_num_comment = 1;			// Java codes
+			%}
+			nl = \n | \r | \r\n
+			%%
+			{nl} 							{ ++line_num; }
+			"/*" 							{ yybegin(comment); }
+			<comment>[^*\r\n]* 		{;}
+			<comment>"*"+[^\/\r\n]* 	{;}
+			<comment>{nl} 				{ ++line_num_comment; }
+			<comment>"*"+"/" 			{ yybegin(YYINITIAL); }
+			/* other rules.... */
+		[end]
+
+
+	7. End of file rule
+		"<<EOF>>" :: actions to be performed when the end of file is reached
+		-> <<EOF>>
+				{...; return YYEOF;}
+
+		. This rule can be useful, coupled with start conditions, to detect unbalanced parentheses (or braces, brackets, quotation marks, ….)
+
+
+
+
+
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+
+
+
+CUP
+-----------------
+2017/05/22
+-----------------
+
+
+Introduction:
+----------------
+	Given a non-ambiguous grammar and a sequence of input symbols, a parser is a program that verifies whether the sequence can be generate by means of a derivation from the grammar
+
+	. CUP is a "bottom-up Parser"
+
+
+	# Comment:
+		like Java syntax, "/* .... */" or "//"
+
+
+
+
+Sections:
+-----------------
+	. Setup: 
+		1. contains all the directives needed for the parser
+		2. libraries
+				-> import java_cup.runtime.*;
+		3. User codes
+				Ridefinition of Cup internal methods
+				Integration with scanner other than JFlex
+
+	. Terminals and non-Terminals:
+		contains the definition of
+			1. The grammar start symbol
+			2. Terminals, passed by JFlex
+			3. Non-Terminals
+
+			#Start symbol
+				"start with <non_terminal_name>;"
+				It is the root of the parse tree
+				Only one occurrence of this keyword is allowed
+
+
+			#Terminals
+				"terminal <terminal_1>,…,<terminal_n>;"
+				<terminal>: name containing letters, "_", "." and digits (the first character must be a letter)
+				Terminals are recognized by Jflex
+
+
+			#Non-Terminals
+				"non terminal <non_terminal_1>,…,<non_terminal_n>;"
+				<non_terminal>: name containing letters, "_", "." and digits (the first character must be a letter).
+	
+	. Precedences:
+		The start symbol is written
+			--> start with D;
+	
+	. Rules:
+		. The Rules section contains one or more productions in the form:
+			<non_terminal> ::= Right_Hand_Side ;
+			where "Right_Hand_Side" is a sequence of 0 or more symbols.
+
+		. To each prodution, an action can be associated, which must be enclosed between "{:" and ":}". If more than one production exist for a given non-terminal, they must be grouped and separated by "|"
+
+		! the action is executed right before the reduce takes place
+
+			--> D ::= T VL S
+						{: System.out.println("Declaration found"); :}
+
+			--> funz ::= type ID RO VL RC S
+								{: System.out.println("Function prototype"); :}
+						| type ID RO VL RC BO stmt_list BC
+								{: System.out.println("Function"); :}
+
+
+	. Example:
+
+		[cup]
+			// Terminal and Non_terminal
+			// I prefer to write terminals in lower case			
+			terminal t, v, s, cm, p, id, so, sc, num;				// D 	--> t VL s
+			non terminal D, VL, V, Va;								// VL 	--> V | VL cm V
+																	// V 	--> p V | Va
+																	// Va 	--> Va so num sc | id						
+																	
+			// Start
+			start with D;
+
+			// Rules
+			D 	::= t VL s;
+			VL 	::= V | VL cm V;
+			V 	::= p V | Va;
+			Va 	::= Va so num sc | id;
+		[end]
+
+
+
+
+
+	. Compiling:
+		Three files are needed:
+			1. Main.java --> for reading and integrating parser
+				[java]
+					import java.io.*;
+
+					public class Main {
+						static public void main(String[] argv) {
+							try {
+								/* Instantiate the scanner and open input file argv[0] */
+								Yylex l = new Yylex(new FileReader(argv[0]));
+								/* Instantiate the parser */
+								parser p = new parser(l);
+								/* Start the parser */
+								Object result = p.parse();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				[end]
+
+
+			2. scanner.jflex --> for defining the regular expressions
+				! "standalone" is removed and must use "%cup"
+				
+				[jflex]
+					import java_cup.runtime.*;
+					…
+					%%
+					%cup 			// instead of "standalone"
+					…
+					%%
+					[a-z]+ 			{System.out.println("a string found"); return new Symbol(sym.el); }
+					"," 				{return new Symbol(sym.cm); }
+				[end]
+
+
+			3. parser.cup --> for defining the grammar
+				[cup]
+					import java_cup.runtime.*;
+
+					terminal el, cm;
+					non terminal List, EList;
+					start with EList;
+
+					EList ::= List 
+								{: System.out.println("List found"); :} 
+									| {: System.out.println("Empty list"); :};
+
+					List ::= List cm el;
+					
+					List ::= el;
+				[end]
+
+
+	. How to compile:
+		0. put all files (Main.java, parser.cup, scanner.jflex) into "CUP root" 	// C:\CUP\
+		1. "jflex scanner.jflex"
+		
+		2. "java java_cup/Main parser.cup"	<-- Windows
+		2. "java java_cup.Main parser.cup"	<-- Linux
+			. In the case of shift/reduce or reduce/reduce conflits:
+				java java_cup.Main –expect <number_of_conflicts> parser.cup
+				
+			. The parse tree is drawn (useful for debugging)
+				java java_cup.MainDrawTree parser.cup
+		
+		3. "javac Yylex.java sym.java parser.java Main.java" 
+			or "javac *.java" for the compilation of all the files of the project
+		
+		4. "java Main <input_file>"		// To execute the program using <input_file> a input
+
+		--> or "jflex scanner.jflex & java java_cup/Main parser.cup & javac *.java & java Main inp.txt" 	// Windows
+		--> or "jflex scanner.jflex ; java java_cup/Main parser.cup ; javac *.java ; java Main inp.txt" 		// Linux

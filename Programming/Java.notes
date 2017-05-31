@@ -1,0 +1,1009 @@
+Java
+// 2017 / tab-size = 2
+---------------------------
+
+
+FEATURES:
+--------------------------------
+	. case sensitive
+	. ClassName 
+
+
+
+
+
+VARIABLE:
+--------------------------------
+	[java]
+		int	 				4 bytes 			2^32
+		double
+		float
+		String
+		char
+
+		final int VARIABLE = 28; 			// constant
+	[end]
+
+
+
+
+
+
+ARRAY:
+--------------------------------
+	. arrays are "objects" so they are considered "reference type"
+	. each element is called by a "index" / "subscript"
+
+	. ONE_DIMENSION:
+		[java]
+			// define a new array
+			// all elements = 0
+			int[] array = new int[lenght];
+
+			int[] array = {1,2,3,4,5};
+
+			array[index] = 3;
+			x = array.lenght;
+
+			//passing to methods
+			// not need to type array[]
+			methodName ( array );
+		[end]
+
+
+
+	. MULTI_DIMENSION:
+		[java]
+			// R = row / C = Column
+			int[][] array = new int[R][C];
+
+			// sizes can be different
+			// note that "{}" should be used for direct initializing
+			int[][] b = {{1,2}, {3,4,5}};
+
+			// also can define different column for each row
+			int[][] b = new int[2][];
+			b[0] = new int[4];
+			b[1] = new int[6];
+		[end]
+
+
+	. Arrays_API:
+		[java]
+			import java.util.Arrays;
+		
+			// sorting ascending
+			Arrays.sort(arrayName);
+
+			// fill an array with an appropriate value
+			Arrays.fill(arrayName, value);
+
+			// copy array array1 into array array2
+			int[] array1 = { 1, 2, 3, 4, 5, 6 };
+			int[] array2 = new int[array1.length];
+			System.arraycopy(array1, 0, array2, 0, array1.length);
+
+			// compare array1 and array2 for equality
+			boolean b = Arrays.equals(array1, array2);
+			// amazing way to show result
+			System.out.printf("array1  %s  array2",(b ? "==" : "!="));
+			/*	_____
+				When comparing array contents, always use Arrays.equals(array1, array2), which compares the two arrays’ contents, rather than array1.equals(array2), which compares whether array1 and array2 refer to the same array object.
+			*/
+
+
+
+			// search arrayName for the value
+			// if found gives Position else negative value
+			int pos = Arrays.binarySearch(arrayName, value);
+			System.out.printf("%s",(pos >=0 ? "yes" : "no"));
+			/*	______
+				Passing an unsorted array to binarySearch is a logic error. 
+				the value returned is undefined.
+			*/
+		[end]
+
+
+
+
+
+ARRAY LIST:
+--------------------------------
+	[java]
+		// create a new ArrayList of Strings with an initial capacity of 10
+		ArrayList<TYPE> listName = new ArrayList<>();
+
+		// insert "yellow" at index X, else it adds to the end of the list
+		listName.add(X, "value"); 
+
+		// remove the first "value" , or use index X
+		// the rest items, will decrease one index
+		listName.remove("value" | X);
+
+		// if value exists?
+		boolean b = listName.contains("value");
+
+		// size of the list
+		int size = listName.size();
+	[end]
+
+
+	Method 		Description
+	-----------------------------------------------------------------------------------------
+	add 			// Adds an element to the end of the ArrayList.
+	clear 			// Removes all the elements from the ArrayList.
+	contains 		// Returns true if the ArrayList contains the specified 
+					// element; therwise,returns false.
+	get 			// Returns the element at the specified index.
+	indexOf 		// Returns the index of the first occurrence of the specified 
+					// element in the ArrayList.
+	remove 		// Overloaded. Removes the first occurrence of the specified 
+					// value or the element at the specified index.
+	size 			// Returns the number of elements stored in the ArrayList.
+	trimToSize 		// Trims the capacity of the ArrayList to the current number 
+					// of elements.
+	-----------------------------------------------------------------------------------------
+	usage:		listName.methodName;
+
+
+
+
+
+
+enum:
+--------------------------------
+	. Like classes, all enum types are "reference types"
+		1. enum constants are implicitly "static final"
+		2. Any attempt to create an object of an enum type with operator "new" results in a compilation error
+
+		[java]
+			// gives the values names
+			enumConstant1.values();
+
+			// gives values in range of these constants, ecxlusive
+			import java.util.EnumSet;
+			EnumSet.range(enumConstant1,enumConstant2);
+		[end]
+
+
+
+
+LOOPS:
+--------------------------------
+		[java]
+			// normal for loop
+			for (int i=0; i<x;i++){
+				//..............
+			}
+
+			// extended for
+			//only surfs elements, no need / access to index counter
+			for( int x : array )
+				//....
+
+			
+			// while loop
+			while (x > 1){
+				//.....
+			}
+
+
+			// do-while loop
+			do{
+				//....
+			} while (x > 1);
+		[end]
+
+
+
+
+
+
+METHODS (Function):
+--------------------------------
+	public:
+		even other classes can reach it by calling "className.method"
+	
+	static: 
+		it is reachable for all other classes "only" inside "This Class"
+
+	. private_static:
+		"private static" class members can be accessed by client code only through methods of the class
+
+
+
+		[java]
+			// it won`t give any result
+			public static void methodName(<TYPE> var1, ...){
+				//....
+				}
+
+			// it has to return a "<TYPE>" as mentioned
+			public static 	<TYPE>	methodName(<TYPE> var1, ...){
+							//anything here
+							return x;
+			}
+
+
+			public static void methodName (int[] array,....){
+				//......
+			};
+		[end]
+
+	! a method can`t change the value inside the "primitive parameters" that is !
+	! 	sent to the method !
+
+
+	. Variable_Length_Argument_Lists:
+		"VLAL" can define a method with unlimited number of list as parameters
+		! it can only be used as the last parameter !
+
+		[java]
+			// it has to be defined by "<TYPE>..."
+			static void methodName (/* any parameter here*/ , <TYPE>...  number){
+				for( <TYPE> i : x)
+					// do whatever
+			}
+		[end]
+
+
+
+
+
+
+
+IMPORT:
+--------------------------------
+	! ctrl+shift+o = Removes not used imports !
+
+	
+
+	[java]
+		// used for getting input from user
+		import java.util.scanner;
+		
+		// imports all static methods of "Math", otherwise you should use i.e. "Math.PI"
+		import static java.lang.Math.*;
+
+		public class className{
+			public static void main(String[] args){
+				// it is necessary before getting any input from user
+				Scanner input = new Scanner(System.in);
+				
+				// use it like this
+				input.nextInt();
+
+				// free memory usage
+				input.close();
+
+				// after "import static" no need to write "Math"
+				double x = PI * 3;
+			}
+		}
+	[end]
+
+
+
+
+
+
+CAST:
+--------------------------------
+	. used for converting types
+	. you may lose the precision of casted value
+
+	int x = (int) double y
+
+
+
+
+
+
+System.out:
+--------------------------------
+	. for printing anything on the screen
+
+		[java]
+			// prints and go to new line
+			System.out.println("data\t"+x);
+
+			/*
+			*	\t 			tab
+			*	\n 			new line
+			* 	\\ 			\
+			* 	\" 			"
+			*/
+
+
+			// formatted print
+			// like "c language" for each var, put its sign
+			System.out.printf("%2d   %s    %c   %3.4f %n", 
+								int,    String, char, float );
+
+			/*
+			* 	%n 			new line
+			* 	%xd			it show the field of x digits
+			* 	%x.yf			shows formatted xxx___.yyyy____
+			*/
+		[end]
+
+
+
+
+
+
+
+
+
+RANDOM:
+--------------------------------
+	. generates very precise and secure random numbers
+
+	[java]
+		import java.security.SecureRandom;
+
+		SecureRandom sR = new SecureRandom();
+
+		// from 0 - to -  X-1
+		a_random_int = sR.nextInt(X);
+	[end]
+
+
+
+Argument:
+--------------------------------
+	. it can be used in Console Mode, to get some data from user as arguments
+	. in console:
+		java ClassName arg[0] arg[1] ...
+
+	[java]
+		public Class ClassName{
+			// "main" method can`t be changed at all
+			public static void main(String[] args){
+				// X = how many arguments should be entered
+				// "java className" is not argument
+				if (args.length != X)
+					// error
+				else
+					// run the code
+					//if u want to use the arguemnt as integer
+					int n0 = Integer.parsInt(args[0]);
+			}
+		}
+	[end]
+
+
+
+
+
+
+
+Package:
+--------------------------------
+	it acts like a folder and keeps the classes
+	
+	. domain.company.department.project.sub_project
+	
+	[java]
+		package parent.child.subchild;
+	[end]
+
+
+
+
+
+
+
+Object Oriented Programming:
+-----------------------------------------
+	THREE IMPORTANT FEATURES
+		1. Encapsulation
+		2. Inheritance
+		3. Polymorphism
+
+
+	! each class can have only one PUBLIC Class, and its name must be like the
+	! file, but it can have any number of Package Class (which has access inside
+	! current Package, only)
+
+	! a class’s private fields can be manipulated only by its methods
+
+	. "has-a relationship" represents "composition". An object contains as members references to other objects. --> "a car has a steering wheel" (and a "car object" has a reference to a "steering-wheel object").
+
+
+	variables in classes:
+
+		Modifier		Class 			Package 			Subclass 			World
+		-------------------------------------------------------------------------------------------
+		public:			"Y"				"Y"					"Y"					"Y"
+		protected:		"Y"				"Y"					"Y"					#
+		nothing:		"Y"				"Y"					# 					#
+		private:			"Y"				# 					# 					#
+		--------------------------------------------------------------------------------------------
+
+		[java]
+			// inside package, every where 	***rarely used
+			int ix;
+			
+			// inside package, every where, also can be used without initializing an object
+			static int six;
+			className.six = 5;
+			
+			//only in this class
+			private int prix;
+
+			// only in this class
+			private static int prsix;
+			
+			//every where
+			public int puix;
+			
+			//every where, also can be used without initializing an object
+			public static int pusix;
+			className.pusix = 5;
+
+			//Such variables can be "initialized" when they’re declared. If they’re not, they must be initialized in every "constructor" of the class. Initializing constants in constructors enables each object of the class to have a different value for the constant. If a final variable is not initialized in its declaration or in every constructor, a compilation error occurs.
+			private final int INCREMENT;
+		[end]
+
+
+	constructor:
+		when an Object is created, it doesnt intitilize itself. by defining a constructor
+		we do it automatically with our values. it is also possibe to define mutiple constructors
+		with different arguments. go to #reusing
+
+		. its name is EXACTLY as the ClassName
+		. it doesnt "return" anything or "void"
+		. if you don`t define it, Java will do it automatically, and intitilize each type with its default value
+			. primitive numeric types	= 0
+			. boolean values 			= false
+			. references				= null
+
+		[java]
+			public class Circle{
+				private double radius;
+
+				// constructor #1
+				public Circle(double r){
+					radius = r;
+				}
+			}
+		[end]
+
+
+	overloading:
+		. a class can have many different constructors. All have the same name as className but with different parameters
+
+		[java]
+			public class Circle{
+				private double radius;
+
+				// constructor #1
+				public Circle(){
+					radius = 1;
+				}
+				
+				// constructor #2
+				public Circle(double r){
+					radius = r;
+				}
+				
+				// constructor #3
+				public Circle(double r, double x){
+					radius = r+x;
+				}
+			}
+		[end]
+
+		! if constructor has parameters, they are needed when an object is created !
+
+
+
+
+	initblock:
+		put everything inside
+
+		[java]
+			public class className(){
+				// any code here
+
+				{	//	initialization block: 
+					//	any code here, always runs
+				}
+			}
+		[end]
+
+
+
+
+
+	reusing:
+		if there are many constructors and want to use one inside another one
+
+		[java]
+			public class Country{
+				private String name;
+				private int population;
+
+				public Country(){
+					name = "Iran";
+				}
+
+				public Country(int number){
+					// it finds which constructor to use based on parameters
+					// it must be used in the first line, before any other code	 		<--***********
+					this();
+					population = number;
+				}
+
+				public Country(String n, int number){
+					this(number);
+					name = n;
+				}
+			}
+		[end]
+
+
+
+	#setMethods
+		"mutator methods" that change a private instance state
+
+	#getMethods
+		"accessor / query methods"
+
+
+	enum:
+		[java]
+			public enum className{
+				// each enum can contain as values as you like
+				//----> these must be declared first, before constructor
+				enumCons1(value_type1,value_type2,...),
+				enumCons2(value_type1,value_type2,...);
+
+				className(String value_type1, String value_type2,...){
+					this.value = value_type1;
+					this.value = value_type2;
+				}
+				
+				public String setMethod(){/* what ever */}
+				public String getMethod(){/* what ever */}
+			}
+
+			//usage
+			public class enumTest{
+				public static void main(String[] args){
+					// this class acts as a enum type, can each object is "a value" inside enum
+					for (className object : className.values())
+						// it will print the name of "enumCons1" and "enumCons2"
+						// and because it is an object, it has access to the methods
+						System.out.println(object + object.getMethod)
+				}
+			}
+		[end]
+
+
+
+
+	objects:
+		. "final" objects can`t be changed after initialization. their properties can change.
+
+		[java]
+			final 	Object o1 = new Object();
+					Object o2 = new Object();
+
+			o1 = o2;				--> it is wrong
+			o1 = new Object();	--> it is wrong
+
+			o1.setName("x");		--> correct
+		[end]
+
+
+
+
+
+Heritage:
+-------------------------------------------
+	. Java supports only "single inheritance", in which each "class" is derived from exactly one direct "superClass"
+	
+	. In an "is-a relationship", an object of a subclass can also be treated as an object of its superClass --> "a car is a vehicle"
+
+	! all classes and their children are an extended class of "Object Class", it is not necessary to write, but note that it derives the methods of class Object. (read more at the end).
+
+	! "final" classes cant have any subClasses	
+	! "final" methods can`t be overridden		
+
+	Complete Example:
+		[java]
+			public class superClass /* extends Object */ {
+				// private variables are only accessible in the "superClass", not in childs
+				// for accessing them in children, use "public methods" of "superClass"
+				private 		int var_pri;
+
+				// accessible in all children
+				protected 	int var_prot;
+
+				//"static" constructors are done only once
+				// constructor
+				public superClass(){
+					//"final" variables must be initialized
+					this.var_pri = x;
+					this.var_prot = y;
+				}
+
+				// use methods like this to access private variables and call them in children
+				public int getPrivateVars(){
+					return var_pri;
+				}
+
+				public String show(){
+					return String.format("%d %s...",x1, x2, ....)
+				}
+			}
+
+			public class subClass extends superClass{
+				//items that only this subClass has
+				public int var_pub;
+
+				// constructor
+				public subClass(int var1){
+					// in the first line, you must construct the superClass by using "super();"
+					// always "super" refer to the parent
+					super(/*any needed parameter*/);
+
+					// always "this" refer to the current class
+					this.var_pub = var1;
+				}
+
+				public int addVars(){
+										// always using "super.methodName();" refer to the method inside the parent class
+					return var_pub + 	super.getPrivateVars();
+				}
+
+
+				// "@Override" helps to show in compile time, if the following method is not the same as the method defined in "superClass".
+				@Override
+				public String show(){
+					return String.format("%d %s...",x1, x2, ....)
+				}
+
+			}
+
+			// "subClass1"  is an object of "subClass"
+			subClass subClass1 = new subClass();
+		[end]
+
+
+
+
+	object:
+		each superClass inherites the Object Class
+
+		[java]
+			Class obj1 = new Class();
+			Class obj2 = new Class();
+
+			obj1.equal(obj2);				//This method compares two objects for equality and returns "true" if they’re equal and "false" otherwise. The method takes any Object as an argument. When objects of a particular class must be compared for equality, the class should override method equals to compare the contents of the two objects. The default equals implementation uses operator "==" to determine whether two references refer to the same object in memory. 
+
+			obj1.hashCode();				//Hashcodes are int values used for high-speed storage and retrieval of information stored in a data structure that’s known as a hashtable. This method is also called as part of Object’s default toString method implementation.
+
+			obj1.toString();				//This method returns a String representation of an object. The default implementation of this method returns the package name and class name of the object’s class typically followed by a hexadecimal representation of the value returned by the object’s hashCode method.
+
+			obj1.wait();
+			obj1.notify();
+			obj1.notifyAll();			//Methods notify, notifyAll and the three overloaded versions of wait are related to multithreading.
+
+
+			obj1.getClass();			//Every object in Java knows its own type at execution time. Method getClass returns an object of class Class (package java.lang) that contains information about the object’s type, such as its class name (returned by Class method getName).
+
+			obj1.finalize();				//This protected method is called by the garbage collector to perform termination housekeeping on an object just before the garbage collector reclaims the object’s memory.It’s unclear whether, or when, finalize will be called. For this reason, most programmers should avoid method finalize.
+		[end]
+
+
+
+
+
+
+Polymorphism:
+----------------------------------
+	it defines how an object can run a "subClass.method()" based on the object.
+
+	[java]
+		// whole Polymorphism Story
+		Animal a;					// object "a" is an "Animal"
+									// after some code, we want to assign a "subAnimal" to "object a". it will be "a cat object" or "a fish object"
+		if(X) a= newCat();	
+		else a= newFish();
+		a.move("right", 3.0);		// at the "run-time" based on the object "cat / fish" it runs the method "move()"
+	[end]
+
+
+	upcasting:
+	downcasting:
+		objects can be casted up/down with some notices
+
+		[java]
+			Child c = new Child();
+			Parent p = new Parent();
+
+			//Upcasting = always True
+			// because "c / new Child()" are a subClass of Parent
+			p = c;					
+			Parent p = new Child();
+
+			//Downcasting - here both False
+			//because "p / new Parent()" are not subClass of Child 
+			c = p;
+			Child c = new Parent();
+
+			// how to fix? with "casting" we tell the compiler that "I know its true"
+			Parent p = new Child();
+			Child c = (Circle) p;
+
+			// subClasses cant be casted to each other
+			cB = (childGirl) cG;									// False
+		[end]
+
+
+
+
+	abstraction:
+		. Classes that can be used to instantiate objects are called "concrete classes". They provide the specifics that make it reasonable to instantiate objects. "Abstract superclasses" are too general to create real objects. they specify only what is common among subclasses
+
+		[java]
+			// no objects can be created from "abstract classes"
+			abstract class superClass{
+				// "Constructors" and "static methods" cannot be declared abstract.
+				// Constructors are not inherited, so an abstract constructor could never be implemented.
+				// Though non-private static methods are inherited, they cannot be overridden.
+
+				// any other code/method...
+
+				IT DOESNT HAVE ANY CODE INSIDE AND MUST BE CODED IN SUBCLASSES
+				public abstract void methodX();
+			}
+
+			class subClass extends superClass{
+
+				// abstract methods must be implemented in subClasses
+				@Override
+				public void methodX(){
+					//do anything...
+				}
+			}
+		[end]
+
+
+	. If a class has an "abstract method", it should be declared as an "abstract Class"
+
+	. If a subClass inherites "abstract methods" then:
+		1. it becomes "concrete" if implements all "abstract methods"
+		2. it becomes "abstract" if doesnt implement all "abstract methods"
+
+	. Can I define an "abstract Class" even if it has no "abstract method"?			#yes
+	. Can I define an "abstract Class" even if it inherites no "abstract method"?	#yes
+		can be done for:
+			1. preventing creating any object from that "abstract Class"
+			2. forcing to create implementing classes of that "abstract Class"
+
+
+	usage:
+		[java]
+			class superClass
+			class subClass0, class subClass1, class subClass2
+
+			superClass[] sC = new superClass[2];
+
+			sC[0] = subClass0;
+			sC[1] = subClass1;
+			sC[2] = subClass2;
+
+			for (superClass current_class : sC){
+				// "current_class" defines sC[i] and of course which subClass it is.
+
+				if (current_class instanceof subClass1){
+					System.out.println("i reached subClass1");
+
+					// "Dynaic Binding" or "Late Binding"
+					// if you need to use "current_class`s method", you have to "downcast it here"
+					subClass1 sc1 = (subClass1) current_class;
+
+					//then use a method of "subClass1"
+					sc1.method();
+
+					// returns the name of "subClass1"
+					sc1.getClass.getName();
+				}
+			}
+		[end]
+
+
+	interface:
+		. An interface is often used when disparate classes—i.e., classes that are not related by a class hierarchy—need to share common methods and constants. This allows objects of unrelated classes to be processed polymorphically—objects of classes that implement the same interface can respond to the same method calls. You can create an interface that describes the desired functionality, then implement this interface in any classes that require that functionality.
+
+		. almost like "abstract" classes, "PURE ABSTRACT"
+		. Unlike classes, all interface members must be "public", and interfaces may not specify any implementation details, such as concrete method declarations and instance variables. All methods declared in an interface are implicitly "public abstract" methods, and all fields are implicitly "public", "static" and "final".
+
+		[java]
+		public interface Shape{
+			// all variables are "public static final"
+			int a = 50;
+
+			// no methods must be implemented here.
+			// all methods are "abstract" and must be implemented in subClasses
+			double methodName();
+
+			// from java 1.8+ interface can have default methods dont need implementation
+			default int methodName(){
+				///any code here...
+			}
+		}
+
+		// use "implements"
+		class subClass implements Shape{
+			//it must implement all the methods inside superClass
+			//otherwise it must be "abstract"
+			double methodName(){
+				return ....;
+			}
+		}
+		[end]
+
+
+
+		interface 			Description
+		----------------------------------------------------------------------------------
+		Comparable		// Java contains several comparison operators (e.g., <, <=, >, >=, ==, !=) that allow you to compare primitive values. However, these operators cannot be used to compare objects. Interface Comparable is used to allow objects of a class that implements the interface to be compared to one another. Interface Comparable is commonly used for ordering objects in a collection such as an array.
+
+		Serializable			// An interface used to identify classes whose objects can be written to (i.e., serialized) or read from (i.e., deserialized) some type of storage (e.g., file on disk, database field) or transmitted across a network.
+
+		Runnable			// Implemented by any class that represents a task to perform. Objects of such as class are often executed in parallel using a technique called multithreading. The interface contains one method, run, which specifies the behavior of an object when executed.
+
+		GUI eventlisteners	// You work with graphical user interfaces (GUIs) every day. In your web browser, you might type the address of a website to visit, or you might click a button to return to a previous site. The browser responds to your interaction and performs the desired task. Your interaction is known as an event, and the code that the browser uses to respond to an event is known as an event handler.  Event handlers are declared in classes that implement an appropriate event-listener interface. Each event-listener interface specifies one or more methods that must be implemented to respond to user interactions.
+
+		AutoCloseable		// Implemented by classes that can be used with the try-with-resources statement to help prevent resource leaks.
+
+
+
+Inner Class:
+--------------------------
+	. defined inside another class
+	. it can have access control
+		public, protected, package access, private
+		"public" can be used even in outer classes
+		"private" can be used only inside outer class
+
+	. it can be "final"
+		. if so, it cant be superClass
+
+	. it can be "static"		//NOTE: normal classes cant be "static"
+
+
+
+Anonymous Inne Class:
+---------------------------
+	. has access to methods and outer classes
+	. usually it is an "interface"
+	
+
+	[java]
+			className object = new className(){
+				public void methodName(){
+					// do anything...
+				}
+			};
+
+			object.methodName();
+	[end]
+
+
+
+
+
+
+EXCEPTION HANDLING:
+--------------------------------
+	hierarchr:
+		. Throwable
+			- Exception
+				. IOException
+				. RuntimeException 			// UNCHECKED EXCEPTIONS
+					. ClassCastException
+					. NullPointerException
+					. ArithmeticException
+					. IndexOutOfBoundsException
+						. ArrayIndexOutOfBoundsException
+					. NoSuchElementException
+						. InputMismatchException
+
+			- Error
+				. AWTError
+				. ThreadDeath
+				. VirtualMachineError
+
+
+	. Unchecked_Exceptions:
+		! All exception types that are direct or indirect subclasses of RuntimeException (package java.lang) are unchecked exceptions 
+		These are typically caused by defects in your program’s code.
+			. "ArrayIndexOutOfBoundsExceptions": You can avoid these by ensuring that your array indices are always 0 <= x  <= array.length
+			. "ArithmeticExceptions": You can avoid the ArithmeticException that occurs when you divide by zero by checking the denominator to determine whether it’s 0 before performing the calculation.
+
+		. Classes that inherit directly or indirectly from class "Error" are "unchecked", because "Errors" are such serious problems that your program should not even attempt to deal with them.
+
+
+	. Checked_Exception:
+		! All classes that inherit from class Exception but not directly or indirectly from class RuntimeException are considered to be checked exceptions  
+		
+		Such exceptions are typically caused by conditions that are not under the control of the program
+			. Ex: file processing, the program can’t open a file if it does not exist.
+
+
+	. finally_block:
+		The "finally block" is an ideal place to release resources acquired in a "try block" (such as opened files), which helps eliminate resource leaks.
+
+
+	[java]
+		try{
+			// do what ever should happen
+		} 
+
+		// single catches
+		catch (EXCEPTION e1){ /* what should happen now? */ }
+		catch (EXCEPTION e2){ /* what should happen now? */ }
+
+		// multi catch
+		// exc EXCEPTIONs are only valid inside each catch
+		catch(EXCEPTION1 | EXCEPTION2 | EXCEPTION3 ex){ /* any code */ }
+
+		finally{
+			// anything here always runs, even if an error occurs.
+			// no access to catch local variables
+		}
+
+		public static void methodName() throws Exception{
+			try{
+				// any code here....
+				// it creates a general exception
+				throw new Exception();
+			}
+			catch (Exception e) {
+				// any code here...
+				// throw exception
+				// "throws Exception (= throw declaration)" must be written after methodName
+				throw e;
+
+				// throw an specific exception
+				throw new IllegalArgumentException("error.......");
+			}
+		}
+
+		
+
+	[end]
+
+
+
+
+	. division_by_zero:
+		. Error Msg: "java.lang.ArithmeticException / by zero"
+		. if "X / 0.0" 		--> 	Infinity / -Infinity
+		. if "0.0 / 0.0"		--> 	NaN
+
+
+	. type_mismatch:
+		Error Msg: "java.util.InputMismatchException"
+
+
+
+
+GOOD TO KNOW:
+--------------------------------
+	"new" creates arrays at "execution" time, not at "compile" time
+
+
+	How to solve:
+		1. Read the problem completely twice.
+		2. Solve the problem manually with 3 sets of sample data.
+		3. Optimize the manual steps.
+		4. Write the manual steps as comments or pseudo-code.
+		5. Replace the comments or pseudo-code with real code.
+		6. Optimize the real code.

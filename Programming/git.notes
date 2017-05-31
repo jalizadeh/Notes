@@ -137,5 +137,7 @@ First Repository:
 	git add . 					// add everything 
 	
 	git commit 				// commit all changes
-	// Note: inside bash lines of information appear that can be changed and you can add / delete details. don`t close it manually, but press "Esc" two times and write ":wq", then press "Enter"
+	// Note: inside bash lines of information appear that can be changed and you can add / delete details. Don`t close it manually, but press "Esc" and write ":wq", then press "Enter"
 	git commit -m "msg..." 	// commit with a message	
+
+	git diff 						// shows changes

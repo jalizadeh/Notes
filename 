@@ -1,0 +1,38 @@
+[1mdiff --git a/Programming/git.notes b/Programming/git.notes[m
+[1mindex cb1093a..b58f957 100644[m
+[1m--- a/Programming/git.notes[m
+[1m+++ b/Programming/git.notes[m
+[36m@@ -128,7 +128,14 @@[m [mFirst Repository:[m
+ -------------------[m
+ 	cmd[m
+ 	make & go inside the forlder[m
+[31m-	git init			// to initialize an empty repository[m
+[32m+[m	[32mgit init						// to initialize an empty repository[m
+ [m
+[31m-	git status 		// current branch and status[m
+[31m-	[m
+\ No newline at end of file[m
+[32m+[m	[32mgit status 					// current branch and status[m
+[32m+[m
+[32m+[m	[32mgit add <filename>		// to add a single file[m
+[32m+[m	[32mgit add *.<extension>		// add files by their extension[m
+[32m+[m	[32mgit add . 					// add everything[m[41m [m
+[32m+[m[41m	[m
+[32m+[m	[32mgit commit 				// commit all changes[m
+[32m+[m	[32m// Note: inside bash lines of information appear that can be changed and you can add / delete details. don`t close it manually, but press "Esc" two times and write ":wq", then press "Enter"[m
+[32m+[m	[32mgit commit -m "msg..." 	// commit with a message[m[41m	[m
+\ No newline at end of file[m
+[1mdiff --git a/Readme.md b/Readme.md[m
+[1mindex 6a836c9..7039844 100644[m
+[1m--- a/Readme.md[m
+[1m+++ b/Readme.md[m
+[36m@@ -2,4 +2,9 @@[m
+ ---------[m
+ Summary and abstraction of programming languages or courses that I`m studying. [m
+ [m
+[32m+[m
+[32m+[m[32m#How to use:[m
+[32m+[m[32m---------[m
+[32m+[m[32mFor enjoying reading these ".notes" files, you need **[Sublime](https://www.sublimetext.com/)** and add the package **[Sublime Notes](https://packagecontrol.io/packages/Notes)**[m[41m [m
+[32m+[m
+ ***Work In Progress...***[m

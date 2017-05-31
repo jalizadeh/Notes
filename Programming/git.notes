@@ -128,7 +128,14 @@ First Repository:
 -------------------
 	cmd
 	make & go inside the forlder
-	git init			// to initialize an empty repository
+	git init						// to initialize an empty repository
 
-	git status 		// current branch and status
+	git status 					// current branch and status
+
+	git add <filename>		// to add a single file
+	git add *.<extension>		// add files by their extension
+	git add . 					// add everything 
 	
+	git commit 				// commit all changes
+	// Note: inside bash lines of information appear that can be changed and you can add / delete details. don`t close it manually, but press "Esc" two times and write ":wq", then press "Enter"
+	git commit -m "msg..." 	// commit with a message	

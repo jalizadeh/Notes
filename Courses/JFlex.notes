@@ -109,6 +109,13 @@ Basic Rules of Regular Expressions:
 	19. "." matches any characters except "newline"
 		-> "c.t"  ::  cat, cut, but it wont accept "cast" or "cost"
 
+	20. The character "^" at the beginning of a regular expression indicates that the sequence must be found at the beginning of the line. This means that either the character sequence is at the beginning of the input stream, or that the last character previously read was a "newline".
+
+	21. The character "$" at the end of a regular expression indicates that the sequence must be followed by a newline character. By default, the newline is not matched by the regular expression, and thus must be matched by another rule
+			-> "end$" 				:: The characters "end" at the end of the line
+			-> "\r | \n | \r\n" 		:: the newline
+
+		! if using any of "^" or "$" not that "multiline" must be used properly.
 
 
 Some Examples:
@@ -206,20 +213,7 @@ Rules:
 
 	2. Context
 
-	3. Beginning and end of line
-		a. The character "^" at the beginning of a regular expression indicates that the sequence must be found at the beginning of the line. This means that either the character sequence is at the beginning of the input stream, or that the last character previously read was a "newline".
-
-		b. The character "$" at the end of a regular expression indicates that the sequence must be followed by a newline character. By default, the newline is not matched by the regular expression, and thus must be matched by another rule
-			-> "end$" 				:: The characters " 'e' 'n' 'd' " at the end of the line
-			-> "\r | \n | \r\n" 		:: the newline
-
-	4. Sensitivity to the right context
-		The binary operator "/" separates a regular expression from its right context.
-		-> "ab/cd" 	:: "ab", but if and only if is followed by the string "cd"
-		-> "ab$" 		:: is equivalent to "ab / ( \n | \r | \r\n )"
-
-
-	5. Start conditions ! INCLUSIVE STATES !
+	3. Start conditions ! INCLUSIVE STATES !
 		Rule starting with <state> are active only when the scanner is in the state <state>. It behaves like "if condition" and when a special state occurs, special actions are done.
 		
 		. Possible states must be declared in the declarations section using the "%state" keyword
@@ -244,7 +238,15 @@ Rules:
 
 	
 
-	6. Start conditions ! EXCLUSIVE STATES !
+	4. Sensitivity to the right context
+		The binary operator "/" separates a regular expression from its right context.
+		-> "ab/cd" 	:: "ab", but if and only if is followed by the string "cd"
+		-> "ab$" 		:: is equivalent to "ab / ( \n | \r | \r\n )"
+
+
+
+
+	5. Start conditions ! EXCLUSIVE STATES !
 		A set of rules can be grouped within an exclusive state as well. The "%xstate" keyword defines an exclusive state.
 		
 		. When the scanner enters an exclusive state:
@@ -274,7 +276,7 @@ Rules:
 		[end]
 
 
-	7. End of file rule
+	6. End of file rule
 		"<<EOF>>" :: actions to be performed when the end of file is reached
 		-> <<EOF>>
 				{...; return YYEOF;}

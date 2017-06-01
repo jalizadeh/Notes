@@ -33,28 +33,28 @@ Basic Rules of Regular Expressions:
 				\a										--> "a"
 				\b										--> word boundary
 				\c										--> "c"
-				\d										--> digit
+				\d										--> digit 				-> [0-9]
 				\e										--> "e"
 				\f 										--> form feed
 				\g\h\i\j\k\l\m							--> "g" "h" "i" "j" "k" "l" "m"
 				\n										--> line feed
 				\o\p\q									--> "o" "p" "q"
 				\r										--> carrige return
-				\s										--> white space
+				\s										--> white space		-> [\t\r\n]
 				\t										--> tab
 				\u										--> "u"
 				\v										--> vertical tab
-				\w										--> word
+				\w										--> word 				-> [A-Za-z0-9_]
 				\x\y\z 									--> "x" "y" "z"
 
 				\A										--> "A"
 				\B										--> non-word boundary
 				\C										--> "C"
-				\D										--> non-digit
-				\E\F\G\H\I\J\K\L\M\N\O\P\Q\R			--> "EFGHIJKLMNOPQR"
-				\S										--> non-white space
+				\D										--> non-digit 			-> [^0-9]
+				\E\F\G\H\I\J\K\L\M\N\O\P\Q\R		--> "EFGHIJKLMNOPQR"
+				\S										--> non-white space 	-> [^\t\r\n]
 				\T\U\V									--> "TUV"
-				\W										--> non-word
+				\W										--> non-word 			-> [^A-Za-z0-9_]
 				\X\Y\Z									--> "XYZ"
 
 
@@ -83,7 +83,7 @@ Basic Rules of Regular Expressions:
 
 	11. The symbol "\t" identifies the tabulation character
 
-	12. "?" indicates that the preceding expression is optional
+	12. "?" indicates that the preceding expression can be repeated 0 or 1 time
 		-> "ab?c" :: both ac & abc
 
 	13. "*" indicates that the preceding expression can be repeated 0 or more times
@@ -97,6 +97,8 @@ Basic Rules of Regular Expressions:
 
 	16. "{n,m}" represents a repetition of the precedent expression between a minimum of n and a maximum of m times
 		-> "ab{2,4}c" :: the sequences abbc, abbbc and abbbbc
+
+		- if "{n,}" it has to have at least "n" repetition and there is no limitation for maximum
 
 	17. "|" represents two alternative expressions
 		-> "ab|cd" :: both the sequences ab and cd

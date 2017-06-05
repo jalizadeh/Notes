@@ -307,6 +307,42 @@ Rules:
 
 
 
+
+Full Example:
+-----------------
+	// any thing here
+
+	%%		// declaration section
+	%standalone
+	%class className 		// name of the lexer
+	%classes					// not to be case-sensitive
+
+	%line
+	%column
+
+	%{							// defining Java codes
+		public int x = 0;
+		private char c = "";
+	%}
+
+	nl 		= \n\r|\n|\r
+	letter 	= [A-Za-z]
+	digit 	= [0-9]
+
+	word 	= ({letter}|{digit})+
+
+	//___________________
+	%% 		// rules section
+
+	{nl} 		{System.out.println("new line found.");}
+	
+	// any other rules
+
+	. 			{;}		// if finds anythign that is not defined, it will do nothing
+
+	<<EOF>>	{System.out.println("Reached end of file"); return YYEOF;}
+
+
 ---------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------
@@ -332,6 +368,16 @@ Introduction:
 
 	# Comment:
 		like Java syntax, "/* .... */" or "//"
+
+
+	How it works?
+		"Input Data" is read by "Jflex Scanner" and the expressions are found. "Found expressions" are sent to the "CUP Parser" which holds the "Tokens" that match them. "CUP Parser" has also the "Grammer Rules" that can checks if with the "Recived Tokens" can generate a valid "Grammar" or not.
+
+														TOKEN 				Grammar(G): Rules....
+														TOKEN 					
+		input 			--> 		Scanner 			TOKEN 	--> 			Parser
+									(JFlex)				TOKEN 					(CUP)
+														....
 
 
 

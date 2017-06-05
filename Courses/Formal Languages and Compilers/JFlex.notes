@@ -487,7 +487,7 @@ Sections:
 				! "standalone" is removed and must use "%cup"
 				
 				[jflex]
-					import java_cup.runtime.*;
+					import java_cup.runtime.*; 		// load CUP libraries
 					…
 					%%
 					%cup 			// instead of "standalone"

@@ -1,0 +1,15 @@
+JavaScript
+------------------------------------
+start:	01/07/2017
+------------------------------------
+
+
+CMD REPL mode:
+--------------
+	1. open cmd
+	2. node
+	3. write any js code
+	
+	. ".save filename.extension" to save current session codes
+	. ".load jsfile.js" to load a js file
+	. ".exit" to exit from node 

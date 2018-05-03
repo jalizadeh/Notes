@@ -1,0 +1,455 @@
+Software Engineering
+--------------------------
+
+Introduction:
+	- Motivation:
+		Software and the economy
+
+		
+	- Misconceptions:
+		. Software is free
+			8-40$ LoC
+
+		. Software is soft
+			Cost of maintenance ">" cost of development (if lifespan is long)
+			Maintenance becomes impossible at a certain point (architecture erosion)
+		
+		. Software is produced
+			NO. Software is developed
+
+		. Software ages	
+
+
+	- Functional_vs_non_Functional:
+		"Functional" characteristics of software: add, sum, dec,...
+
+		"Non functional" properties sometimes harder to express, harder to design into software
+			1. User interface usable by not computer expert
+			2. Precision
+			3. Reliability
+			4. Performance, efficiency, ...
+
+
+	- Process_and_Product:
+		Process 	-> 	activities, people, tools
+					--> cost, effort, punctuality
+
+		Products 	-> 	documents, data, code
+			. Functionality
+				(Set of functions that satisfy stated or implied needs)
+
+			. Correctness
+				(Capability of the product to provide the intended functionality in all cases)
+
+			. Reliability
+				(The ability of a system or component to perform its required functions under stated conditions for a specified period of time.)
+
+			. Performance
+				( Time: speed/delay to perform a function )
+				( Space: memory required to perform a function )
+			
+			. Safety
+				(Capability of avoiding hazards)
+
+			. Robustness
+				(Capability of providing a reduced functionality in adverse conditions)
+			
+			. Usability
+				(Ease of use of a function)
+
+		- The quality of the product depends on the quality of the process
+		
+	
+	. Software_Engineering:
+		Principles, techniques, methods to guide the development and maintenance of software with defined process and product attributes
+
+		1. Principles:
+			Fundamental and broad coverage ideas, capable of producing positive, useful effects
+				. Separation of concerns
+					(Given a large, difficult problem, try to split it in many (independent) parts, consider a part at a time)
+
+				. Abstraction
+					(Given a difficult problem/system, extract a simpler view of it, avoiding unneeded details. Then reason on the abstract view (model))
+
+				. Modularity
+					(Divide a complex system in modules, with high cohesion and low coupling)
+					(Information hiding)
+
+
+
+
+
+
+----------------------------------------------------------------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+----------------------------------------------------------------------------------------
+
+
+
+
+User Interface design:
+	
+	. Principles_and_Ideas:
+		. Ergonomy
+			(Safety, adaptability, comfort, usability,...)
+
+		. Emotional design
+			(Beyond ergonomy, the interaction (object) should cause positive emotions in the user)
+
+		. User eXperience (UX)
+			(Usability + feelings + emotions + values)
+
+		. Transparent technology
+			(No emphasis on technology)
+
+		. Feedback, user centered design
+			(No decision based on personal opinions, but feedback from real users)
+
+
+
+
+
+----------------------------------------------------------------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+----------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+The software process:
+	1. Activities:
+		To produce software (documents, data, code) with defined, predictable process properties (cost, duration) and product properties (functionality, reliability, ...)
+
+		. HOW? -> from the bottom up
+			Requirement engineering 		// What the software should do
+			Design and Architecture		// What units and how organized
+			Implementation				// Write source code, (executable code)
+			Integrate units					// Integrate all to produce the System
+
+
+		The V & V Activities 				// verification and validation
+			- Control that the "requirements" are correct
+				. Externally: did we understand what the customer/user wants?
+				. Internally: is the document consistent?
+
+			- Control that the "design" is correct
+				. Externally: is the design capable of supporting the requirements
+				. Internally: is the design consistent?
+
+			- Control that the "code" is correct
+				. Externally: is the code capable of supporting the requirements and the design?
+				. Internally: is the code consistent (syntactic checks)
+
+
+		The management activities
+			. Project management
+				Assign work and monitor progress
+				Estimate and control budget
+
+			. Configuration management
+				Identify, store documents and units
+				Keep track of relationships and history
+
+			. Quality assurance
+				Define quality goals
+				Define how work will be done
+				Control results
+
+
+	2. Phases:
+		Beyond development
+			Operate the software 	(Deployment, operation)
+			Modify the software 	(Maintenance)
+			End up 				(retirement)
+
+
+		Development & Maintenance do the same activities (requirement, design, etc), but:
+				a. in maintenance an activity is constrained by what has been done before
+				b. after years, the constraints are so many that changes become impossible
+
+
+	3. Comparison with traditional engineering
+		SE is young 
+
+
+	4. System process / Software Process
+		Stand alone software 		--> software process
+		Embedded software 		--> system process
+
+		a. System requirements engineering
+		b. System requirements
+		c. System design
+			d. > Software development
+			d. > Hardware development
+				(Requirements, design, implementation,test, integration)
+		e. System integration and test
+
+
+
+	5. Software Engineering Approaches
+		- Three Basic Approaches
+			1. Document based, semiformal, UML 
+				Semiformal language for documents (UML), hand (human) based transformations 	and controls
+			
+			2. Formal / Model Based
+				Formal languages for documents, automatic transformations and controls
+			
+			3. Agile
+				Limited use of documents, emphasis on code and tests
+
+
+		- Approaches, diffusion
+			1. Document based, semiformal, UML
+				Standard industrial practice, especially on large projects and mature companies/domains
+
+			2. Formal
+				Limited application in critical domains, small part of projects, does not scale up in large projects
+			
+			3. Agile
+				Latest approach, debated, limited but increasing	usage
+
+
+
+	6. Recent Trends
+		- Development: 
+			. Component based SE
+				Buy + integrate v. s. build
+				Open source or commercial
+			. Offshoring
+			. Outsourcing
+			. Agile
+
+		- Bussiness_Models:
+			. ASP – pay per use
+			. Freeware and professional versions
+			. Shareware
+			. Adware
+
+
+
+
+
+----------------------------------------------------------------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+----------------------------------------------------------------------------------------
+
+
+
+
+
+Requirement Engineering:
+--------------------------------
+
+Requirement Document Structure:
+	1. Overall description 					// TEXT
+	2. Stakeholders 						// TEXT
+	3. Context diagram 					// UML UCD
+	4. Interfaces 							// TEXT, PDL, XML, Screenshots
+	5. Requirements 						// TYPE, Numbering					
+		. Functional
+		. Non functional
+		. Domain
+	6. Use case diagram 					// UML UCD
+	7. Scenarios 							// TABLE, TEXT
+	8. Glossary 							// TEXT, UML UCD
+	9. System design 						// UML UCD
+
+--------------------------------
+	. Stakeholders:
+		-> Role or person with an interest (stake) in the system to be built
+
+		. User: Uses the system / Can include different user profiles
+		. Buyer: Pays for the system
+		. Administrator:
+		. Analyst: Expert in requirement engineering, and or in domain 
+		// Domain: Collection of related or with the same functionality
+		. Developer:
+
+
+	. Requirement:
+		Description of a system / service and of constraints on it
+		
+		x. Problems arise when requirements are not precisely stated.
+		x. Ambiguous requirements may be interpreted in different ways by developers and users ("manage sales" | "handle sales")
+
+		Requirements should be both: (!BUT Impossible!)
+			- Complete: They should include descriptions of all facilities required.
+			- Consistent: There should be no conflicts or contradictions in the descriptions of the system facilities.
+
+		. DEFECTS:
+			Omission/ incompleteness
+			Incorrect Fact
+			Inconsistency/contradiction
+			Ambiguity
+			Extraneous Information (Overspecification (design))
+			Redundancy
+
+
+	<Requirement Techniques>
+	1. Context diagram
+		- Defines what is inside the system to be developed, what is outside
+			. Entity outside = actor
+			. {actor} ⊂ {stakeholder}
+			. Other systems/subsystems/applications
+			. Human users
+			//? Actor / Physical Interface / Logical Interface		
+
+	2. Interfaces
+		- Defines interfaces between inside and outside. Three types of interface:
+			. User interfaces, GUIs 		// Sketch of interface
+			. Procedural interfaces 		// PDL interface description
+			. Data exchanged 				// Data interface (XML)
+
+
+	3. Types of requirements
+		. Functional 					// like Buttons, ...
+			Description of services / behaviors provided by the system
+			Application vs. domain 	//( domain = set of related applications)
+		
+		. Non Functional 				// like Efficiency, Usability, ...
+			Constraints on the services
+			Application vs. domain
+			x. should be measurable
+
+			properties:
+				Functionality
+				Reliability
+				Usability
+				Efficiency
+				Maintainability
+				Portability
+
+		. Domain requirements
+			. Derived from the "application domain" and describe system characteristics and features that reflect the domain.
+
+			. Can be new functional requirements, constraints on existing requirements or define specific computations.
+
+			. If domain requirements are not satisfied, the system may be unworkable.
+
+			- Problems:
+				a. Understandability
+					. Requirements are expressed in the language of the "application domain" and not understood by software engineers developing the system.
+				
+				b. Implicitness
+					. Domain specialists understand the area so well that they do not think of making the domain requirements explicit.
+
+
+	4. Numbering requirements
+	
+	5. Scenarios, sequence diagrams
+		Sequence of steps (events) that describe a typical interaction with the system
+
+	6. Use cases
+		Set of scenarios with common user goal
+	
+	7. Glossary
+		- Key concepts and their relationships, shown by UML class diagrams
+			Sale, Products, ...
+
+	8. Class diagrams
+		. refine glossary
+		. describe application model
+		. describe system design
+
+	9. System Design
+		Subsystems (software and not software) that compose the system
+
+
+
+
+
+----------------------------------------------------------------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+-----------------------------------/\/\/\/\/\/\/\/\-----------------------------------
+-----------------------------------\/\/\/\/\/\/\/\/-----------------------------------
+----------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+Validaion and Verification:
+-------------------------------
+	. Validation: (correlated to Requirements)
+		is it the right software system?
+		effectiveness
+		external (vs user)
+		reliability
+
+	. Verification: (correlated to the Stakeholders needs)
+		is the software system right?
+		efficiency
+		internal (correctness of vertical transformations)
+		correctnes
+
+	. Failure:
+		An execution event where the software behaves in an unexpected way
+
+	. Fault:
+		The feature of software that causes a failure
+		May be due to:
+			An error in software
+			Incomplete/incorrect requirements
+	
+	. Defect:
+		Failure or fault
+
+
+	# Basic goal of VV
+		. Minimize number of defects inserted
+		. Cannot be zero due to inherent complexity of software
+		. Maximize number of defects discovered and removed
+		. Minimize time span between insertion and discover and removal
+
+
+	# V&V techniques
+		. Static:
+			inspections
+			source code analysis
+
+		. Dynamic:
+			testing: Dynamic technique, requires execution of executable system or executable unit
+				. system test
+				. unit test
+
+
+
+	# Unit Test 
+		. Black box (functional)
+			Random
+			Equivalence classes partitioning
+			Boundary conditions
+		
+		. White Box (structural)
+			Coverage of structural elements

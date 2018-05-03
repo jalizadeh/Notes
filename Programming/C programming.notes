@@ -1,0 +1,2052 @@
+C Programming
+------------------------------------
+
+
+
+
+Library
+--------------------------------------
+[c]
+	#include <stdio.h>	//standard io
+	#include <conio.h>	//
+	#include <dir.h>	//
+	#include <dos.h>	//
+
+[c]
+
+
+Variabales
+---------------------------------------
+
+	Data_Type	Variabale_Name	value
+	--------------------------------------------------------
+	int 		a			= 100;
+
+
+	Data_Type:
+		1. Primary: 	int, char, float
+		2. Secondary:	array, function, structure, pointer
+		3. User_base:
+
+
+
+
+
+
+Input / Output
+-------------------------------
+	printf:
+	`````
+	. formatted print
+	. must match the variabale type & quantity
+
+	[c]
+		#include <stdio.h>
+
+		void main(){
+			printf("a simple message.");
+			printf("%d %ld %f %u", int, long int, float, memory address);
+		}
+	[c]
+
+
+
+	scanf: 
+	`````
+	. formatted print
+	. must match the variabale type & quantity
+
+	[c]
+		#include <stdio.h>
+
+		void main(){
+			scanf("Enter a value: %d %ld %f %u", &int, &long int, &float, &memory address);
+		}
+	[c]
+
+
+
+
+	fprintf:
+	``````
+		stdout:
+			That means that you are printing output on the main output device for the session... whatever that may be. The user's console, a tty session, a file or who knows what. What that device may be varies depending on how the program is being run and from where.
+			The following command will write to the standard output device (stdout)...
+				printf( "hello world\n" );
+			Which is just another way, in essence, of doing this...
+				fprintf( stdout, "hello world\n" );
+			
+			In which case stdout is a pointer to a FILE stream that represents the default output device for the application. You could also use
+				fprintf( stderr, "that didn't go well\n" );
+			in which case you would be sending the output to the standard error output device for the application which may, or may not, be the same as stdout -- as with stdout, stderr is a pointer to a FILE stream representing the default output device for error messages.
+
+	[c]
+		int fprintf(FILE *stream, const char *format, ...);
+
+		fprintf(stdout, "hello %d - %d", var1 , var2); // == printf("hello");
+	[c]
+
+
+
+
+
+Pointer
+----------------------------
+"Pointer Variabale" is a variabale which keeps the memory address of another variabale.
+
+	[c]
+		// basic rules of pointer
+		int *p, a, b;
+		a = 10;
+		p = &a;	// pointer initialization
+		b = *p;	// accessing "a" through "p" | Also called "Derefrencing of Pointer"
+
+		printf("value of a: %d - address of a: %u", a, &a);	//10 - 5224
+		printf("value of p: %d - address of p: %u", *p, &p);	//10 - 5224
+		printf("value of b: %d - address of b: %u", b, &b);	//10 - 5220
+	[c]
+
+
+	! b == *(&b)
+
+	any amount of pointers can point to another pointer.
+	[c]
+		// pointer to pointer
+		int *p1, **p2, a, b;
+		a = 10;
+		p = &a;	// pointer initialization
+		b = *p1;	// accessing "a" through "p" | Also called "Derefrencing of Pointer"
+		
+		p2 = &p1;	// |address|		-----> 		|address|  --->		|value|
+					// 	p2								p1					a
+
+		// for printing p2. note it is double pointer
+		printf("value of p2: %d - address of p2: %u", **p2, &p2);	//10 - 5220
+	[c]
+
+
+
+
+
+sprintf()
+-----------------------------------------------
+"sprintf" stands for “String print”. Instead of printing on console, it store output on char buffer which are specified in sprintf
+
+int sprintf(char *str, const char *string,...); 
+
+
+Example:
+	[c]
+		#include<stdio.h>
+		int main()
+		{
+		    char buffer[50];
+		    int a = 10, b = 20, c;
+		    c = a + b;
+		    sprintf(buffer, "Sum of %d and %d is %d", a, b, c);
+		 
+		    // The string "sum of 10 and 20 is 30" is stored 
+		    // into buffer instead of printing on stdout
+		    printf("%s", buffer);
+		 
+		    return 0;
+		}
+	[c]
+
+
+
+
+
+
+Concurrency
+----------------------------------
+
+wait:
+	[c]
+		#include <sys/wait.h>
+		pid_t wait (int *statLoc);
+
+		while(wait((int *) 0));		//it will wait for all children to terminate
+	[c]
+	
+	Blocks the calling process if all its children are running (none is already terminated)
+	"wait" will return as soon as one of its children terminates
+	
+	#Returns
+		The exit status of a child
+			If a child process terminates, and the parent process does not call "wait", the child exit status remains pending in the kernel Process Control Block
+		
+		The PID of a terminated child
+
+		An error if the calling process has not children.
+		
+
+	#The statLoc parameter
+		Is an integer pointer
+			If not NULL collects the exit value of the child
+		The status information are
+			Implementation dependent
+			Recovered using macros in <sys/wait.h> (WIFEXITED, WIFSIGNALED, etc.)
+
+	#Zombie state
+	A child process terminated, whose parent is running, but has not yet executed "wait" is in the zombie state. The parent doesnt know the "child`s exit status"
+		. The data segment of the process remains in the process table because the parent could need the child`s "exit status"
+		. The child entry is removed only when the parent executes "wait"
+		. Many zombie processes may remain in the system if one or more parents do not execute their "wait" system call.
+		. If the parent process terminates (without executing "wait", and the child is still running, the latter is inherited by init the process (PID=1).
+		. The child does not become zombie because the system knows that no one is waiting for its exit status.
+
+
+	waitpid:
+	``````
+	[c]
+		#include <sys/wait.h>
+		pid_t waitpid (	pid_t pid,	int *statLoc, int options);
+	[c]
+
+	If a parent needs to wait a specific child it is better to use "waitpid", which:
+	suspends execution of the calling process until a child, specified by pid argument, has changed state. By default, "waitpid()" waits only for terminated children.
+
+
+	The parameter "pid" allows waiting for:
+		Any child [waitpid()==wait()] 								(pid = -1)
+		The child whose PID=pid if >0 								(pid > 0 )
+		Any child whose GID=abs(pid) 								(pid < -1)
+		Any child whose GID is equal to that of the calling process 	(pid = 0 )
+
+	The parameter "option" allows additional controls:
+		"Default is 0", or is a bitwise OR of constants
+		"WNOHANG", if the child specified by PID is running, the caller does not block (not blocking version of wait )
+		"WCONTINUED"
+		...
+
+
+
+
+
+exec:
+---------------------------------------
+System call "exec" substitutes the process code with the executable code of another program
+	
+	. The new program begins its execution as usual (from main)
+	. Does not create a new process
+	. Substitutes the calling process image with the image of another program.
+	. The process PID does not change
+		fork 	-> duplicates an existent process
+		exec 	-> executes a new program
+
+	Versions:
+	````````
+	execl, execlp, execle
+	execv, execvp, execve
+
+	Type 				Action
+	--------------------------------------------------------------------------------------------------
+	l (list) 				Arguments are a list of strings
+	v (vector) 			Arguments is a vector of strings char **arguments
+	p (path) 			The executable filename is looked for in the directories 
+						listed in the environment variable PATH
+	e (environment) 	The last argument is an environment vector "envp[]" which 
+						defines a set of new associations strings name=value
+
+	[c]
+		#include <unistd.h>
+
+		int execl 	(char *path, char *arg0, ..., (char *)0); 		//(char *)0 == "\0" == NULL ==null string
+		int execlp 	(char *name, char *arg0, ..., (char *)0);
+		int execle 	(char *path, const char *arg0,..., char *envp[]);
+
+		int execv 	(char *path, char *argv[]);
+		int execvp 	(char *name, char *arg[]);
+		int execve 	(char *path, char *arg[], char *envp[]);
+	[c]
+
+	! The return value is -1 in case of error
+	if any error happens, it will print "new name: <error details>"
+
+
+
+	Example:
+		[c]
+			//      	src        	new name 		arg1 		arg2		end
+			execl(	"/bin/cp",	"mycp",		"./file1",	"./file2",	NULL);	//OK
+			// it is like "$cp ./file1 ./file2" in linux bash
+			
+			execl("echo","myecho","text1","textN",(char*)0);	//OK
+			// = "$echo text1 textN"
+
+			//wrong. because "/bin/" is missing in the first argument
+			//execl("cp","File_copy","./file1","./file2",(char*)0);
+			
+			execlp("cp","cp","./file1","./file2",(char*)0);		//OK
+		[c]
+
+
+	execv / execvp:
+	`````````````
+		Uses a single argument: a vector of strings
+
+		[c]	
+											//Last argument must be a NULL pointer 	
+			char *cmd[ ] = {"ls","-laR",".",(char *) 0};
+			execv("/bin/ls", cmd);
+		[c]
+
+
+	Error Handling:
+	````````````	
+		[c]
+			//error
+			if(exec("any code here...") < 0)
+				printf("error");
+		[c]
+
+
+
+
+
+
+
+Signal
+---------------------------------
+	A signal is a software interrupt, i.e., an asynchronous notification sent, by the kernel or byanother process, to a process to notify it of an event that occurred
+
+	Signals
+	1. can be used as a limited form of inter-process communication
+	2. allow notify asynchronous events such as the error conditions illustrated for exceptions
+
+
+	Exception 					Exception handler 					Signal
+	----------------------------------------------------------------------------------------
+	Divide 						error divide_error( ) 				SIGFPE
+	Floating-point error 		coprocessor_error( ) 				SIGFPE
+	Debug 						debug( ) 							SIGTRAP
+	Breakpoint 				int3( ) 								SIGTRAP
+	Overflow 					overflow( ) 						SIGSEGV
+	Bounds check 				bounds( ) 							SIGSEGV
+	Segment not present 		segment_not_present( ) 			SIGBUS
+	Stack segment fault 		stack_segment( ) 					SIGBUS
+	General protection 		general_protection( ) 				SIGSEGV
+	Page Fault 					page_fault( ) 						SIGSEGV
+	Invalid opcode 			invalid_op( ) 						SIGILL
+	Intel-reserved 				None 								None
+
+
+
+	Typing some key combinations at the controlling terminal of a process causes the system to send it a signal:
+		"Ctrl-C" sends an "SIGINT" signal
+			by default, this causes the process to terminate.
+
+		"Ctrl-Z" sends a terminal stop "SIGTSTP" signal
+			by default, this causes the process to suspend execution.
+		
+		"Ctrl-\" sends a "SIGQUIT" signal;
+			by default, this causes the process to terminate and dump core.
+
+
+	Main Signals:
+	```````````
+	Name 			Description
+	--------------------------------------------------------------------------------------------
+	SIGABRT 		Process abort, generated by system call abort
+	SIGALRM 		Alarm clock, generated by system call alarm
+	SIGFPE 		Floating-Point exception
+	SIGILL 			Illegal instruction
+	SIGKILL 		Kill (non maskable)
+	SIGPIPE 		Write on a pipe with no reader
+	SIGSEGV 		Invalid memory segment access
+	SIGCHLD 		Child process stopped or exited
+	SIGUSR1		User-defined signal 1
+	SIGUSR2		User-defined signal 2
+
+	# You can display the complete list of signals using the shell command "kill -l"
+
+
+
+	Signal Management:
+	````````````````
+	1. Signal generation
+		When the kernel or a process causes an event that generate a signal
+
+	2. Signal delivery
+		A not yet delivered signal remains pending
+		At signal delivery a process executes the actions related to that signal
+		The lifetime of a signal is from its generation to its delivery
+
+	3. Reaction to a signal
+		To properly react to the asynchronous arrival of a given type of signal, a process must inform the kernel about the action that it will perform when it will receive a signal of that type
+		
+		A process may
+			● Accept the default behavior (be terminated)
+			● Declare to the kernel that it wants to ignore the signals of that type
+			● Declare to the kernel that it wants to catch and manage the signals of that type by means of a signal handler function (similarly to the interrupt management)
+
+
+	Precondition to properly handle a received signal for a process is to declare to the kernel if a signal of a given type will be ignored or caught.
+		This is done using the system call "signal" which instantiates a signal handler
+											!"signal" does not send a signal
+
+
+	signal():
+	```````
+	[c]
+		#include <signal.h>
+		void (*signal (int sig, void (*func)(int))) (int);
+	[c]
+
+	"sig" indicates the type of signal to be caught (ex: SIGALRM, SIGUSR1, ...)
+	"func" specifices the address (i.e., pointer) to the function that will be executed when a signal of that type is received by the process. This function has a single argument of int "type", which indicates the type of signal that will be handled
+
+	Return value:
+		the previous value of the signal handler, i.e., the previous signal handler function
+		"SIG_ERR" in case of error, "errno" is set to indicate the cause
+
+
+
+
+	Signal Generation:
+	```````````````
+	#The kernel generates signals (ex: SIGCHLD, SIGFPE, ...)
+	A process can (ask the kernel to) generate a signal by means of the system call
+		1. "kill()" & "raise()"
+			!kill is misleading, does not kill a process, just send to it, a signal
+		
+		2. "alarm()"
+			Ask the kernel to receive a "SIGALRM" after a specified amount of time
+
+
+
+	Waiting for a signal:
+	````````````````
+	A process can wait for a signal by means of the system call
+		"pause", and any other blocking system call suspends the process until any signal is received
+		
+		"sleep" suspends the process for a specified amount of time (waits for signal SIGALRM)
+
+
+	Reactions to a signal:
+	`````````````````
+		1. Accept the default behavior
+			Every signal has its own default behavior, defined by the system. Most of the default reactions is process termination
+			[c]
+				signal (SIGname, SIG_DFL);
+				//SIG_DFL is defined in signal.h
+				//#define SIG_DFL ((void (*)()) 0
+			[c]
+		
+
+
+		2. Ignore signal delivery
+			"SIGKILL" and "SIGSTOP" cannot be ignored because the kernel and the superuser would not have the possibility to control all processes. Ignoring an illegal memory access, signaled by "SIGTSTP", would produce an undefined process behavior
+			[c]
+				signal (SIGname, SIG_IGN);
+				// SIG_IGN is defined in signal.h
+				//#define SIG_DFL ((void (*)()) 1
+			[c] 
+
+
+		3. Catch the signal:
+			the signal handler:
+				● Is executed when the signal is delivered,
+				● When it returns, the process continues with the next instruction, as it happens for interrupts
+			[c]
+				signal (SIGname, signalHandlerFunction)
+				// SIGname indicates the signal type
+				// signalHandlerFunction is the user defined signal handler function
+				// A signal handler function must be defined for every signal type that must be caugth
+			[c]
+
+
+
+		Example:
+		````````
+		[c]
+			// simple handler
+			#include <signal.h>
+			#include <stdio.h>
+			#include <unistd.h>
+			void manager (int sig) {
+				printf (“Received signal %d\n”, sig);
+				// A SIGINT signal that is generated when a user presses ctrl+c. This is the way to terminate programs from terminal.
+				return;
+			}
+
+			int main() {
+				signal (SIGINT, manager);
+				while (1) {
+					printf (“main: Hello!\n”);
+					sleep (1);
+				}
+			}
+		[c]
+
+
+		[c]
+			//multiple handler
+			...
+			// one manager function can handle multiple signals
+			void manager (int sig) {
+				if (sig==SIGUSR1)
+					printf (“Received SIGUSR1\n”);
+				else if (sig==SIGUSR2)
+					printf (“Received SIGUSR2\n”);
+				else 
+					printf (“Received %d\n”, sig);
+				return;
+			}
+			...
+			int main () {
+				...
+				// for each signal, it must be written/handled
+				signal (SIGUSR1, manager);
+				signal (SIGUSR2, manager);
+				...
+			}
+
+		[c]
+
+
+		[c]
+			//signal of child termination to the parent
+			
+			// Ignore SIGCHLD, sent by the kernel to the parent at the exit of a child
+			signal (SIGCHLD, SIG_IGN);
+
+			for (i=0; i<3; i++) {
+				if (fork() == 0) {
+					// child
+					sleep (1);
+					printf ("i=%d PID=%d\n", i, getpid());
+					exit (i);
+				}
+			}
+
+			sleep (5);
+			for (i=0; i<3; i++) {
+				ret = wait (&code);
+				printf("Wait: ret=%d code=%x\n", ret, code);
+			}
+		[c]
+
+
+		
+
+	kill():
+	````
+		Send signal "sig" to a process or to a group of processes (pid)
+			A user process can send signals only to processes having the same UID
+			The superuser can send signal to any process
+		
+			[c]
+				#include <signal.h>
+				int kill (pid_t pid, int sig);
+			[c]
+
+		Return value:
+			0 	-> success
+			-1	-> error
+
+		
+		If pid is 			Send sig
+		--------------------------------------------------------------------------------------------------
+		>0 					To process with PID equal to pid
+		==0 				To all processes with GID equal to its GID
+		<0 					To all processes with GID equal to the absolute value of pid
+		==-1 				To all processes except a set of system processes
+
+
+
+
+	raise():
+	``````
+		The raise system call allows a process to send a signal to itself
+		! raise(sig) == kill(getpid(), sig)
+			[c]
+				#include <signal.h>
+				int raise (int sig);
+			[c]
+			
+
+	pause():
+	```````
+		Suspends the calling process until a signal I delivered
+		Returns after the completion of the signal handler
+			
+		Return value:
+			-1
+			and errno is set to EINTR
+
+
+
+
+	alarm():
+	```````
+		Ask the kernel so send a "SIGALRM" to the calling process in "seconds"
+			. The default action for SIGALRM is process termination
+			. A call to "alarm(seconds)" before the expiration of a previous alarm reschedules the request to the kernel
+			. "alarm(0)" cancels any pending alarm
+
+		[c]
+			#include <unistd.h>
+			unsigned int alarm (unsigned int seconds);
+		[c]
+
+
+		Return value:
+			n 	-> the number of seconds remaining until the delivery of a previously scheduled alarm
+			0	-> if there was no previously scheduled alarm.
+
+
+		!Warning
+			The signal is generated by the kernel
+				. It is possible that the process get the CPU control after some time, depending on the scheduler decisions
+				. System calls "sleep" and "alarm" uses the same kernel timer
+
+
+	Example:
+		[c]
+			alarm(seconds);
+			// now kernel will send back a signal to current process
+			// after seconds
+
+			// if I want to wait for the kenel`s signal, I must use pause() here to wait
+			// otherwise, the process will continue
+			pause();
+
+			return 0;
+		[c]
+
+		[c]
+			#include <stdio.h>
+			#include <unistd.h>
+			#include <signal.h>
+			
+			void myAlarm (int sig) {
+				printf (“Alarm\n”);
+			}
+
+			int main (void) {
+				pid_t pid;
+				(void) signal (SIGALRM, myAlarm);
+
+				pid = fork();
+				switch (pid) {
+					case -1: /* error */
+						printf (“fork failed”);
+						exit (1);
+					case 0: /* child */
+						sleep(5);
+
+						// it will ask the kernel to send SIGALRM to his parent
+						kill (getppid(), SIGALRM);
+						exit(0);
+				}
+				
+				/* parent */
+				pause ();
+				exit (0);
+			}
+		[c]
+
+
+
+	Signal limitations:
+	``````````````
+		Signals do not convey any information
+		The memory of the pending signals is limited. Max one signal pending per type. Forthcoming signals of the same type are lost
+		Signals can be ignored
+		Signal interrupt functions that must be reentrant
+		Produce race conditions
+		Some limitations are avoided in POSIX.4
+
+
+
+
+
+
+
+---------------------------------------------
+Inter-Process Communication (IPC):
+---------------------------------------------
+Concurrent processes can be
+	Independent
+	Cooperating
+
+An independent process
+	Cannot be influenced by other processes
+	Cannot influence other processes
+
+A set of cooperating processes cooperate by sharing data or by exchange of messages
+	Both require appropriate synchronization mechanisms
+
+
+Communication Models & Channels:
+`````````````````````````````
+	#Shared memory 	[P1 --->  Shared Memory Area <----- P2]
+		Normally the kernel does not allow a process to access the memory of another process
+		Processes must agree on the access rights and strategies
+			Access rights
+			Access strategies
+
+		The most common methods for shared buffer. These, allow sharing a large amount of data:
+			#File
+				● Sharing the name or the file pointer or descriptor before fork/exec
+
+			#Mapped file
+				● Associates a shared memory region to a file
+
+
+	#Message exchange 	[P1 --->  Kernel <----- P2]
+		Setup of a communication channel
+			Useful for exchanging limited amounts of data
+			Uses system calls
+				which introduce overhead
+
+		A communication channel can offer direct or indirect communication
+			#Direct
+			Is performed naming the sender or the receiver
+				● send (to_process, message)
+				● receive (from_process, &message)
+
+			#Indirect
+			Performed through a mailbox
+				● send (mailboxAddress, message)
+				● receive (mailBoxAddress, &message)
+
+
+	Synchronous or asynchronous synchronization
+		Both sending or receiving messages can be
+			● Synchronous, i.e., blocking
+			● Asynchronous, i.e., non-blocking
+		
+		Limited or unlimited capacity queue
+			If the capacity is zero, the channel cannot allow waiting messages (no buffering)
+			If the capacity is limited the sender blocks when the queue is full
+
+	UNIX makes available:
+		Half-duplex pipes
+		FIFOs
+		Full-duplex pipes
+		Named full-duplex pipes
+		Message queues
+		Semaphores					(For process synchronization)
+		Sockets						(Network process communication)
+
+
+
+Pipes:
+`````
+	Allow creating a data stream among processes
+		The user interface to a pipe is similar to file access
+		A pipe is accessed by means of two descriptors (integers), one for each end of the pipe
+		A process (P1) writes to an end of the pipe, another process (P2) reads from the other end
+							___________
+				P1 ------->|___________|---------->P2
+
+	#half-duplex
+	Data can flow in both directions (from P1 to P2 or from P2 to P1), but not at the same time
+
+	#Full-duplex
+	models have been proposed more recently, but they have limited portability
+
+	A pipe can be used for communication among a parent and its offspring, or among processes with a common ancestor
+
+	// Simplex: Mono-directional
+	// Half-Duplex: One-way, or bidirectional, but alternate (walkie-talkie)
+	// Full-Duplex: Bidirectional (telephone)
+
+
+
+	pipe();
+	`````
+	System call pipe creates a pipe
+		It returns "two" file descriptors in vector fileDescr
+			"fileDescr[0]": Typically used for <reading>
+			"fileDesrc[1]": Typically used for <writing>
+		
+		The input stream written on fileDescr[1] corresponds to the output stream read on fileDescr[0]
+
+	[c]
+		#include <unistd.h>
+		int pipe (int fileDescr[2]);
+	[c]
+
+
+	Return value
+		0 	-> success
+		-1 	-> error
+
+
+	Process:
+	```````
+		! Using a pipe inside a process is possible but not much useful
+
+		A pipe typically allows a parent and a child to communicate
+		! Parent must fork after creating the pipe
+
+		
+		1. The parent process creates a pipe
+		2. Performs a fork
+		3. The child process inherits the file descriptors
+
+			parent 												child
+		---------------- 										---------------
+		fd[0]	fd[1]										fd[0]	fd[1]
+		|		|__________ 				______________|			|
+		|						KERNEL 								|
+		|________________ 	 (pipe)		_____________________ |
+
+
+		<Half-duplex mode>
+		One of the two processes (e.g., the parent) writes on pipe, the other (e.g., the child) reads from pipe
+		
+		<Simplex mode>
+		The descriptor that is not used by a process should be closed
+
+
+	pipe I/O:
+	````````
+	R/W on pipes do not differ to R/W on files
+		Use "read" and "write" system calls
+		It is possible to have more than one reader and writer on a pipe, but
+			Data can be interlaced using more than one writer
+			Using more readers, it is undetermined which reader will read the next data from the pipe
+
+	read():
+		Blocks the process if the pipe is empty <it is blocking>
+		If the pipe contains less bytes than the ones specified as argument of the read, it returns only the bytes available on the pipe
+		If all file descriptors referring to the write-end of a pipe have been closed, then an attempt to read from the pipe will see end-of-file <read returns 0>
+
+	write():
+		Blocks the process if the pipe is full (it is blocking)
+		The dimension of the pipe depends on the architecture and implementation
+			Constant "PIPE_BUF" defines the number of bytes that can be written atomically on a pipe
+			Standard value of "PIPE_BUF" is "4096" on Linux
+		If all file descriptors referring to the read-end of a pipe have been closed, then a write to the pipe will cause a "SIGPIPE" signal to be generated for the calling process
+
+
+
+	Example:
+		[c]
+			#include <unistd.h>
+			#include <stdlib.h>
+			#include <stdio.h>
+			#include <string.h>
+
+			int main () {
+				int n;
+				int file[2]; // keeps the file descriptors
+				char cW = 'x';
+				char cr;
+				pid_t pid;
+				if (pipe(file) == 0) { // 0 = success
+					pid = fork ();
+
+					if (pid == -1) {
+						fprintf(stderr, "Fork failure");
+						exit(EXIT_FAILURE);
+					}
+
+					// The two process synchronize because 
+					// read and write are possibly blocking.
+					if (pid == 0) {
+						// Child reads -> file[0]
+						close (file[1]); //at first, close unused ends
+						n = read (file[0], &cR, 1);
+						printf("Read %d bytes: %c\n", n, cR);
+						exit(EXIT_SUCCESS);
+					} else {
+						// Parent writes ->file[1]
+						close (file[0]); //at first, close unused ends
+						n = write (file[1], &cW, 1);
+						printf ("Wrote %d bytes: %c\n", n, cW);
+					}
+				}
+				exit(EXIT_SUCCESS);
+			}
+		[c]
+
+
+		[c]
+			//The parent`s loop tries to fill the pipe with all the data he can
+			// but at most 65536 bytes can be filled, then it goes into "blocking mode"
+			//When the child starts reading, parents starts filling again until it reaches SIZE and finishes
+
+			//If i change the "for" loops to "while(1)", they will continue writing-reading forever :)
+			#include <stdio.h>
+			#include <stdlib.h>
+			#include <unistd.h>
+			#include <string.h>
+			#include <signal.h>
+
+			#define SIZE 600*1024
+
+			int main(){
+				int file[2], n, nw, nr;
+				char cW = '1', cR;
+				setbuf(stdout, 0);
+				
+				if(pipe(file) == 0){ // 0 = success
+					if(fork() >0){
+						//parent
+						printf("\nParent\t\tPID: %d\n", getpid());
+						sleep(1);
+						close(file[0]);
+						for(int i=0; i<SIZE;i++){
+							nw = write(file[1], &cW, 1);
+							n = n + nw;
+							fprintf(stdout, "W %d\r", n); //\r = CR = Carriage Return (not Line Feed)
+						}
+						exit(EXIT_SUCCESS);
+					} else{
+						//child
+						printf("\nChild\t\tPID: %d\n", getpid());
+						sleep(5);
+						close(file[1]);
+						for(int i=0;i<SIZE;i++){
+							nr = read(file[0], &cR, 1);
+							n = n + nr;
+							fprintf(stdout, "\t\t\tR %d\r", n);
+						}
+						printf("\n");
+						exit(EXIT_SUCCESS);
+					}
+				}
+			return(1);
+			}
+		[c]
+
+		[c]
+			//page 30
+		[c]
+
+
+
+
+
+
+----------------------------------
+Thread:
+----------------------------------
+A "thread" is a function that is executed in concurrency with the main thread
+A process with multiple threads = a set of independently executing functions that share the process resources
+
+Characteristics of the processes:
+	A process may execute other processes through
+		1. Cloning (UNIX, fork)
+		2. Replacing the current image with another image (UNIX, exec)
+		3. explicit call (Windows, CreateProcess)
+
+	A process has
+		1. Its own address space
+		2. A single execution thread (a single program counter)
+
+	Synchronization and data transfer
+		No cost or minimal for (almost) independent processes
+		High cost for cooperating processes
+	
+	Cloning involves
+		A significant increase in the memory used
+		Creation time overhead
+	
+	Management of multiple processes requires
+		Scheduling
+		Expensive context switching operations
+		// Standard process = heavyweight process
+		// A task with a single thread of execution
+
+	There are several cases where it would be useful to have
+		Lower creation and management costs
+		A single address space
+		Multiple execution threads within that address space
+
+	The thread model allows a program to control multiple different flows of operations that overlap in time.
+	Each flow of operations is referred to as a thread
+	Creation and control over these flows is achieved by making calls to the POSIX Threads API.
+	A thread can share its address space with other threads
+	<The process is the owner of the resources that are uses by all its threads>
+	<The thread is the basic unit of CPU utilization (and scheduling)>
+	<Thread is also called a lightweight process>
+
+Cons & Pros:
+	[+] Shorter response time
+	[+] Shared resources
+		Processes can share data only with special techniques
+		Threads share data automatically
+	[+] Lower costs for resource management
+		Allocate memory to a process is expensive
+		Threads use the same section of code and/or data to serve more clients
+	[+] Increased scalability
+		The advantages of multi-threaded programming increase in multi-processor systems
+		In multi-core systems (different calculation units per processor) threads allow easily implementing concurrent programming paradigms based on
+			● Task separation (pipelining)
+			● Data partitioning (same task on data blocks)
+
+	[-] Since threads of the same process run in the same address space they must by synchronized to properly access shared data
+
+
+Example:
+	[c]
+		mult (a, b) {
+			for (i=a; i<b; i++)
+			v[i] = v1[i] * v2[i]
+		}
+		...
+		CreateThread (mult, 0, n/2);
+		CreateThread (mult, n/2, n);
+	[c]
+
+
+
+Multithread Programming Models:
+	1. User-level thread
+		Thread implemented at user-level
+		The kernel is not aware that threads exist
+
+		The thread package is fully implemented in the user space, as a set of functions
+			. These function calls, at user level, the standard system libraries
+			. Each process has a its own thread table, which is managed by the thread package functions
+			. The kernel is not aware about threads, it manages only processes
+
+	2. Kernel-level thread
+		Thread implemented at kernel-level
+		The kernel directly supports the thread concept
+
+	3. Mixed or hybrid solution
+		The operating system provides both user-level and kernel threads
+
+
+!more theory > u05s01-threads.pdf
+
+
+
+
+Pthread library:
+`````````````
+	The management can be done
+		A user level (by functions)
+		A kernel level (via system calls)
+
+	The Pthreads library allows:
+		Creating and manipulating threads
+		Destroying thread
+		Synchronizing threads
+		Protection of resources shared by threads
+		Thread scheduling
+
+	It defines more than 60 functions. All functions have a "pthread_ prefix"
+		pthread_equal, pthread_self, pthread_create
+		pthread_exit, pthread_join, pthread_cancel, pthread_detach
+	
+
+	[c]
+		#include <pthread.h>
+		// Compile your program linking the pthread library
+		// gcc –Wall –g –o <exeName> <file.c> –lpthread
+	[c]
+
+A thread is uniquely identified
+	1. By a type identifier "pthread_t"
+	2. Similar to the PID of a process "pid_t"
+	3. The type "pthread_t" is opaque
+		Its definition is implementation dependent
+		Can be used only by functions specifically defined in Pthreads
+		It is not possible compare directly two identifiers or print their values
+	4. It has meaning only within the process where the thread is executed
+		Remember that the PID is global within the system
+
+
+
+pthread_equal()
+`````````````
+	Compares two thread identifiers
+	
+	Arguments
+		Two thread identifiers
+
+	Return value
+		"!=0"	 	-> the two threads are equal
+		"0"			-> otherwise
+
+	[c]
+		int pthread_equal ( pthread_t tid1, pthread_t tid2);
+	[c]
+
+
+pthread_self()
+````````````	
+	Returns the thread identifier of the calling thread
+		It can be used by a thread (with "pthread_equal") to self-identify
+
+	[c]
+		pthread_t pthread_self ( void );
+	[c]
+
+
+
+pthread_create():
+``````````````
+	At run-time a program consists of one process and one thread. "pthread_create" allows creating a new thread
+		The maximum number of thread that can be created is undefined and is implementation dependent
+
+	[c]
+		int pthread_create (
+			pthread_t *tid,
+			const pthread_attr_t *attr,
+			void *(*startRoutine)(void *), // Search in file: What does void mean?
+			void *arg );
+	[c]
+
+	Arguments
+		Identifier of the generated thread "tid"
+		Thread attributes "attr"
+		NULL is the default attribute
+		C function executed by the thread "startRoutine"
+		Argument passed to the start routine "arg" //A single argument
+		NULL if no argument
+
+	Return value
+		"0"		-> success
+		"Error" -> on failure
+
+
+
+
+pthread_exit()
+````````````
+	A process (with all its threads) terminates if
+		Its thread calls "exit" or "_exit" or "_Exit"
+		The main thread execute "return"
+		The main thread receives a signal whose action is to terminate
+
+	A single thread can terminate (without affecting the other process threads)
+		Executing "return"
+		Executing "pthread_exit"
+		Receiving a cancellation request performed by another thread using "pthread_cancel"
+
+	[c]
+		void pthread_exit ( void *valuePtr );
+	[c]
+
+	It allows a thread to terminate returning a termination status
+
+	Arguments
+		The "valuePtr" value is kept by the kernel until a thread calls "pthread_join"
+		This value is available to the thread that calls "pthread_join"
+
+
+Example
+	[c]
+		// a simple thread: create / print / exit
+		#include <stdio.h>
+		#include <stdlib.h>
+		#include <unistd.h>
+		#include "pthread.h"
+
+		void *tF(){
+			printf("thread is printing.\n");
+			pthread_exit(NULL); 	// terminate only this thread
+		}
+
+		int main(){
+			pthread_t tid;	
+			int rc;
+			rc = pthread_create(&tid, NULL, tF, NULL);
+			if(rc){
+				perror("error");
+				exit(EXIT_FAILURE);
+			}
+			sleep(5);
+			printf("hi");
+			
+			return(1); // or use -> pthread_exit(NULL);
+		}
+	[c]
+
+	[c]
+		// Creation of N threads with 1 argument
+		// a simple thread: create / print / exit
+		#include <stdio.h>
+		#include <stdlib.h>
+		#include <unistd.h>
+		#include "pthread.h"
+
+		// this thread receives parameter
+		void *tF (void *par) {
+			int *tidP, tid;
+			...
+			tidP = (int *) par; 		//the address is casted to integer
+			tid = *tidP;
+			...
+			printf("thread run.\n");
+			pthread_exit(NULL); 	// terminate only this thread
+		}
+
+		int main(){
+			pthread_t tid[NUM_THREADS];	
+			int rc, t;
+			for(t=0;t<NUM_THREADS;t++){
+														// address of t
+				// each thread will receive a parameter value of <t>
+				rc = pthread_create(&t[t], NULL, tF,  (void *) &t);
+				if(rc){
+					perror("error");
+					exit(EXIT_FAILURE);
+				}
+			}
+			sleep(5);
+			printf("hi");
+			
+			return(1); // or use -> pthread_exit(NULL);
+		}
+	[c]
+
+	[c]
+		// Creation of N threads with 1 argument
+		//types of arguments to be sent to the threads
+		void *tF (void *par) {
+			long int tid;
+			...
+			tid = (long int) par; 		// Cast of a value "void * <-> long int"
+			...
+			pthread_exit(NULL);
+		}
+		...
+		pthread_t t[NUM_THREADS];
+		int rc; 
+		long int t;
+		for (t=0; t<NUM_THREADS; t++) {
+			rc = pthread_create (&t[t], NULL, fF, (void *) t);
+			if (rc) { ... }
+		}
+		pthread_exit (NULL);
+	[c]
+
+	[c]
+		//types of arguments to be sent to the threads
+		void *tF (void *par) {
+			long int tid;
+			...
+			tid = (long int) par; // Cast of a value "void * <-> long int"
+			...
+			pthread_exit(NULL);
+		}
+		...
+		long int tA[NUM_THREADS];
+		for (t=0; t<NUM_THREADS; t++) {
+			tA[t] = t;
+													// Argument stored in a vector element
+			rc = pthread_create (&t[t], NULL, tF, (void *) tA[t]);
+			if (rc) { ... }
+		}
+		pthread_exit (NULL);
+	[c]
+
+
+	[c]
+		// Creation of N threads with 1 argument
+		//types of arguments to be sent to the threads
+		void *tF (void *par) {
+			int *tid, taskid;
+			...
+			tid = (int *) par; // Cast of a vector of pointers "void * <-> int"
+			taskid = *tid;
+			...
+			pthread_exit(NULL);
+		}
+		...
+		int tA[NUM_THREADS];
+		for (t=0; t<NUM_THREADS; t++) {
+			tA[t] = t;
+													// The pointer to a vector element
+			rc = pthread_create (&t[t], NULL, tF, (void *) &tA[t]);
+			if (rc) { ... }
+		}
+		pthread_exit (NULL);
+	[c]
+
+
+	[c]
+		// Creation of N threads with 1 struct
+		//types of arguments to be sent to the threads
+		struct tS {
+		int tid;
+		char str[N];
+		};
+
+		void *tF (void *par) {
+			int *tidP, tid;
+			...
+			tidP = (int *) par;
+			tid = *tidP;
+			...
+			pthread_exit (NULL);
+		}
+
+		pthread_t t[NUM_THREADS];
+		struct tS v[NUM_THREADS];
+		...
+		for (t=0; t<NUM_THREADS; t++) {
+			v[t].tid = t;
+			strcpy (v[t].str, str);
+													// address of t
+			rc = pthread_create (&t[t], NULL, tF, (void *) &v[t]);
+			...
+		}
+		...
+	[c]
+
+
+
+pthread_join():
+`````````````
+	Used by a thread to wait the termination of another thread
+	At its creation a thread can be declared
+		1. Joinable
+		Another thread may "wait" (pthread_join) for its termination, and collect its exit status. Its termination status is retained until another thread performs a "pthread_join" for that thread
+
+		2. Detached
+		No thread can explicitly wait for its termination (not joinable) . Its termination status is immediately released
+
+	! A thread calling "pthread_join" waits until the required thread does not call "phread_exit"
+
+	[c]
+		int pthread_join ( pthread_t tid, void **valuePtr );
+	[c]
+
+	Arguments:
+		Identifier "tid" of the waited-for thread
+		The void pointer ValuePtr will obtain the value returned by thread tid
+			Returned by "pthread_exit"
+			Returned by "return"
+			"PTHREAD_CANCELED" if the thread was deleted
+			"valuePtr" can be set to "NULL" if you are not interested in the return value
+
+
+	Return value:
+		"0" 		-> success
+		Error code -> failure
+			If the thread was detached "pthread_join" should fail
+			If it fails, it returns the constant "EINVAL" or "ESRCH"
+
+
+	Example:
+		[c]
+			void *tF (void *par) {
+				long int tid;
+				...
+				tid = (long int) par;
+				...
+				pthread_exit ((void *) tid); 	// Returns the exit status (tid in this example)
+			}
+
+
+			void *status;
+			long int s;
+			...
+			/* Wait for threads */
+			for (t=0; t<NUM_THREADS; t++) {
+				rc = pthread_join (t[t], &status); 	//t[t] collects the tids
+				s = (long int ) status;		// Waits each thread, and collects its exit status
+				if (rc) { ... }
+			}
+			...
+		[c]
+
+
+		[c]
+			 // Use of a shared global variable
+			#include <stdio.h>
+			#include <stdlib.h>
+			#include <unistd.h>
+			#include <pthread.h>
+			#include <string.h>
+
+			int myglobal = 0;
+
+			void *tF (void * arg){
+			    int *argc = (int *) arg;
+			    int i, j;
+			    for(i=0;i<10; i++){
+			        j = myglobal; // The global variable is incremented by means of a copy on j
+			        j +=1;
+			        printf("t\ti: %2d\tg: %2d\n", i, myglobal);
+			        
+			        if(*argc > 1)
+			            sleep(1);
+			        
+			        myglobal = j;
+			    }
+			    printf("(T: myglobal = %d)\n", myglobal);
+			    return NULL;
+			}
+
+			int main(int argc, char ** argv){
+			    pthread_t myThread;
+			    int i;
+			    
+			    pthread_create(&myThread, NULL, tF, &argc);
+			    for(i=0; i<10;i++){
+			        myglobal += 1;
+			        printf("m\ti: %2d\tg: %2d\n", i, myglobal);
+			        sleep(1);
+			    }
+			    pthread_join(myThread, NULL);
+			    printf("\n(M: myGlobal = %d)\n", myglobal);
+			    exit(0);
+			}
+		[c]
+
+
+
+
+pthread_cancel():
+```````````````
+	Terminates the target thread
+	The effect is similar to a call to "pthread_exit(PTHREAD_CANCELED)" performed by the target thread
+	The thread calling "pthread_cancel" does not wait for termination of the target thread (it continues)
+
+	[c]
+		int pthread_cancel ( pthread_t tid );
+	[c]
+
+
+	Arguments:
+		Target thread "tid" identifier
+
+	Return value:
+		"0" 		-> success
+		Error code -> failure
+
+
+pthread_detach():
+```````````````
+	Declares thread "tid" as detached
+	The status information will not be kept by the kernel at the termination of the thread
+	No thread can join with that thread
+	Calls to "pthread_join" should fail with error code "EINVAL" or "ESRCH"
+	<The attribute of the pthread_create allows creating a detached thread>
+
+	[c]
+		int pthread_detach ( pthread_t tid );
+	[c]
+
+	Arguments:
+		Thread "tid" identifier
+
+	Return value:
+		"0" 			-> success
+		Error code 	-> failure
+
+
+	Example:
+		[c]
+			pthread_t tid;
+			int rc;
+			void *status;
+			rc = pthread_create (&tid, NULL, PrintHello, NULL);
+			if (rc) { ... }
+			
+			pthread_detach (tid);
+			// the thread is detached here
+
+			// so no thread can be joined with the detached thread
+			// then the "rc" will be error code
+			rc = pthread_join (tid, &status);
+			if (rc) {
+				// Error
+				exit (-1);
+			}
+			pthread_exit (NULL);
+		[c]
+
+
+
+		[c]
+			// Creates a detached thread using the attribute of pthread_create
+			pthread_attr_t attr;
+			void *status;
+
+			pthread_attr_init (&attr);
+
+			// Creates a detached thread
+			pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
+												// PTHREAD_CREATE_JOINABLE);
+			
+			rc = pthread_create (&t[t], &attr, tF, NULL);
+			if (rc) {...}
+			
+			// Destroys the attribute object
+			pthread_attr_destroy (&attr);
+			
+			rc = pthread_join (thread[t], &status);
+			
+			if (rc) {
+				// Error
+				exit (-1);
+			}
+		[c]
+
+
+Example:
+	[c]
+		...
+		static void *CF () {
+			sleep(2);
+			printf ("C\n");
+			sleep(2);
+			printf ("F\n");
+			return ((void *) 1); // Return code
+		}
+
+		static void *E () {
+			sleep(2);
+			printf ("E\n");
+			return ((void *) 2); // Return code
+		}
+
+		int main (void) {	
+			pthread_t t_cf, t_e;
+			void *retval;
+
+			sleep(2);
+			printf ("A\n");
+			sleep(2);
+			pthread_create (&t_cf,NULL,CF,NULL);
+			sleep(2);
+			printf ("B\n");
+			sleep(2);
+			pthread_create (&t_e,NULL,E,NULL);
+			sleep(2);
+			printf ("D\n");
+			pthread_join (t_e, &retval);
+			pthread_join (t_cf, &retval);
+			sleep(2);
+			printf ("G\n");
+			return 0;
+		}
+	[c]
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------
+Semaphore:
+// https://www.youtube.com/watch?v=PQ5aK5wLCQE
+-----------------------------------------------------------------------------------------------------
+
+Introduction:
+```````````
+	The previous solutions are not satisfactory because they are either complex or not flexible. However the hardware solution can be used to implement system calls that can be used for solving
+		-> not only the Mutual Exclusion problem
+		-> but also any other synchronization problem
+		-> avoiding the busy form of waiting
+
+	These system calls rely on a data structure called "semaphore" introduced by Dijkstra in 1965
+
+	A semaphore <S> is a shared structure including
+		A counter
+		A waiting queue, managed by the kernel
+		Both protected by a lock
+
+		[c]
+			typedef struct semaphore_tag {
+				char lock; 			// Lock variable protects count  and queue management
+				int cnt; 			// Counter
+				process_t *head; 	// Thread list
+			} semaphore_t;
+		[c]
+
+
+Primitives:
+````````
+	The kernel offers a set of primitives (i.e., system calls) that allows a thread to be blocked on the semaphore (wait) or to wakeup if it was blocked (signal)
+	Operations on a semaphore are atomic
+		-> It is impossible for two threads to perform simultaneous operations on the same semaphore
+
+	init(S, k):
+	````````
+		Defines and initialize semaphore <S> counter to value <k> (k is a counter)
+		
+		Two types of semaphores
+			1. Binary semaphores // mutex lock (mutex ≡ MUTual EXclusion)
+				-> The value of k is only 0 or 1
+			2. Counting semaphores
+				-> The value of k is "non negative"
+
+		! k>=0
+			Cannot be negative because the system calls acting on a semaphore manage the counter so that, if negative, its absolute value is the number of threads waiting on the semaphore queue
+
+
+		[c]
+			init (semaphore_t S, int k) {
+				alloc S;
+				lock(S.lock);
+				S.cnt = k;
+				S.queue = NULL;
+				unlock(S.lock);
+			}
+		[c]
+
+
+
+	wait(S):
+	```````
+		Decrement the counter, if the counter value of <S> is "negative" or "zero" blocks the calling thread
+		If <S> is "negative", the counter absolute value indicates the number of threads blocked on the semaphore queue
+		Originally called "P()" from the Dutch "Probeer te verlagen", i.e., "try to decrease"
+
+
+	signal(S):
+	````````
+		Increases the semaphore <S> counter
+		If <S> counter is "negative" or "zero" some thread was blocked on the semaphore queue, which can be made ready to run
+		Originally called V(), from the Dutch "verhogen", i.e., "to increment"
+		
+		! Not to be confused with system call signal that used to declare a signal handler
+
+
+
+		Waits only if cnt 								If cnt was negative
+		becomes negative								before the increment ->
+														some threads are waiting
+		------------------------------------------------------------------------------------------------
+		wait (semaphore_t S) {						signal (semaphore_t S) {
+			lock(S.lock)									lock(S.lock)
+			S.cnt--;											S.cnt++;
+			if (S.cnt<0) {									if (S.cnt<=0) {
+				insert T to S.queue;							remove T from S.queue;	
+				block T;										wakeup T;
+				(includes unlock(S.lock))					}			
+			} else								
+				unlock(S.lock);								unlock(S.lock);
+		}											
+
+
+
+	destroy(S):
+	`````````
+		Release semaphore <S> memory
+			Often not used in the examples
+
+		[c]
+			destroy (semaphore_t S){
+				lock(S.lock)
+				while (S.cnt<=0) {
+					free S.queue; 	// Eliminates all remaining waiting threads
+					S.cnt++;
+				}
+				unlock(S.lock)
+			}
+		[c]
+
+
+
+	The semaphore queue:
+	```````````````````
+		Is implemented in kernel space by means of a queue of "Thread Control Blocks"
+		The kernel scheduler decides the queue management strategy (not necessarily FIFO)
+
+
+
+
+Synchronization:
+`````````````
+	The use of semaphores is not limited to the Critical Section access protocol. Semaphores can be used to solve any synchronization problem using
+		An appropriate protocol
+		Possibly, more than one semaphore
+		Possibly, additional shared variables
+
+	Example:
+	````````
+		-> more from page 11 to 37
+
+		[c]
+			// Pure synchronization: Obtain a specific order of execution
+			//  Ti executes code A before Tj executes code B
+
+			init(S, 0);
+
+			//Ti
+			……
+			A;
+			signal (S);
+			……
+
+			//Tj
+			……
+			wait (S);
+			B;
+			……
+		[c]
+
+
+
+		[c]
+			// Pure synchronization: Client-Server
+			//  Synchronize two threads so that
+			//    Tj waits Ti , then Ti waits Tj
+
+			init (S1, 0);
+			init (S2, 0);
+
+			//Pi / Ti
+			while (TRUE) {
+				prepare data
+				signal (S1);
+				wait (S2);
+				get processed data
+			}
+
+			//Tj / Tj
+			while (TRUE) {
+				wait (S1);
+				process data
+				signal (S2);
+				...
+			}
+		[c]
+
+
+
+
+
+
+
+Implementation:
+``````````````
+	Several synchronization structures (POSIX "Pthread"):
+		Mutex (Mutual exclusion)
+		Semaphore
+		Condition Variable
+			-> pthread_cond_init
+			-> pthread_cond_wait
+			-> pthread_cond_signal
+			-> pthread_cond_broadcast
+			-> pthread_cond_destroy
+
+		! These are share objects. They are allocated by a thread, but they are kernel objects
+
+
+	Kernel independent system calls (POSIX)
+	All semaphore system calls have name "sem_xxxx"
+		-> sem_init()
+		-> sem_wait()
+		-> sem_try()
+		-> sem_post()
+		-> sem_getvalue()
+		-> sem_destroy()
+
+	[c]
+		#include <semaphore.h>
+		sem_t *sem1, *sem2, ...;	
+	[c]
+	
+
+	Return value:
+		On error 	-> returns -1
+
+
+
+	sem_init():
+	`````````
+		Initializes the semaphore counter at value "value"
+		The "pshared" value identifies the type of semaphore
+			If equal to "0", the semaphore is local to the threads of current process
+			Otherwise, the semaphore can be shared between different processes (parent that initializes the semaphore and its children)
+
+		[c]
+			int sem_init (
+				sem_t *sem,
+				int pshared,
+				unsigned int value
+			);
+		[c]
+
+
+
+	sem_wait():
+	``````````
+		Standard wait
+			If the semaphore counter is <= 0 the calling thread is blocked
+
+		[c]
+			int sem_wait (sem_t *sem);
+		[c]
+
+
+
+	sem_post():
+	``````````
+		Standard signal
+			Increments the semaphore counter
+			Wakes up a blocking thread when the counter is <= 0
+
+		[c]
+			int sem_post (sem_t *sem );
+		[c]
+
+
+
+	sem_getvalue():
+	``````````````
+		Allows obtaining the value of the semaphore counter
+			The value is assigned to "*valP"
+			If there are waiting threads
+			"0" is assigned to "*valP" (Linux) or a negative number whose absolute value is equal to the number of processes waiting (POSIX)
+
+		[c]
+			int sem_getvalue (sem_t *sem, int *valP);
+		[c]
+
+
+
+
+	sem_destroy():
+	````````````
+		Destroys the semaphore at the address pointed to by "sem"
+			Destroying a semaphore that other threads are currently blocked on, produces undefined behavior  
+				-> (on error, -1 is returned)
+
+			Using a semaphore that has been destroyed produces undefined results, until the semaphore has been reinitialized
+
+		[c]
+			int sem_destroy (sem_t *sem);
+		[c]
+
+
+
+
+	Example:
+		[c]
+			...
+			#include "semaphore.h"
+			...
+			sem_t *sem;
+			...
+			sem = (sem_t *) malloc(sizeof(sem_t));
+			sem_init (sem, 0, 1);	//data is shared locally
+			... create processes or threads ...
+			sem_wait (sem); 	//wait => value - 1
+			... Critical Section ...
+			sem_post (sem); // signal => value + 1
+		[c]
+
+
+
+	sem_trywait():
+	````````````
+		Non-blocking wait
+			counter > 0 	-> perform the decrement, and returns 0
+			
+			counter ≤ 0 	-> returns -1  (instead of blocking the caller as "sem_wait" does) 
+							-> "EAGAIN" error
+
+
+
+
+Pthread mutex:
+`````````````
+	Binary semaphores (mutex)
+	A mutex is of type "pthread_mutex_t"
+
+
+	pthread_mutex_init():
+	``````````````````
+		Initializes the mutex referenced by mutex with attributes specified by attr (default=NULL)
+		
+		Return value
+			0  		->  success
+			Error code otherwise
+
+
+		[c]
+			int pthread_mutex_init (
+				pthread_mutex_t *mutex,
+				const pthread_mutexattr_t *attr
+			);
+		[c]
+
+
+
+	pthread_mutex_lock():
+	``````````````````
+		Blocks the caller if the mutex is locked
+		Acquire the mutex lock if the mutex is unlocked
+		
+		Return value
+			0 		-> success
+			Error code otherwise
+
+		[c]
+			int pthread_mutex_lock ( pthread_mutex_t *mutex );
+		[c]
+
+
+
+
+	pthread_mutex_trylock():
+	`````````````````````
+		Similar to "pthread_mutex_lock", but returns without blocking the caller if the mutex is locked
+		
+		Return value
+			0 if the lock has been successfully acquired
+			"EBUSY" error if the mutex was already locked
+
+		[c]
+			int pthread_mutex_trylock ( pthread_mutex_t *mutex );
+		[c]
+
+
+
+	pthread_mutex_unlock():
+	`````````````````````
+		Release the mutex lock (typically at the end of a Critical Section)
+
+		Return value
+			0 		->  success
+			Error code otherwise
+
+		[c]
+			int pthread_mutex_unlock ( pthread_mutex_t *mutex 	);
+		[c]
+
+
+
+	pthread_mutex_destroy():
+	``````````````````````
+		Free mutex memory and the mutex cannot be used any more
+
+		Return value
+			0 		-> success
+			Error code otherwise
+
+		[c]
+			int pthread_mutex_destroy ( pthread_mutex_t *mutex );
+		[c]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------
+SHORT CODES
+--------------------------------
+run a linux cmd and save result:
+	cmd = "ls > list.txt"
+	system(cmd);
+
+
+list of all signals 
+	"kill -l"
+
+send a signal to a process
+	// -n 	-> signal number, find from list above
+	// pid 	-> process id, find them through "ps" or "ps -l"
+	"kill -n pid"	
+
+	// SIGname -> sginal name: SIGINT, ...
+	"kill -SIGname pid"
+
+
+
+
+
+
+
+-----------------------------------------------------
+Linux SHELL:
+----------------------------------------------------
+
+	The standard shell commands
+		Allow executing processes sequentially
+		Each process is executed in foreground, i.e., using the control terminal
+
+	The shell interpret character "&" as an indication to run the command in background
+		The process is executed in concurrency with the shell. It loses the control terminal input
+		The shell outputs immediately a new prompt
+		It is possible to run several processes in parallel
+
+
+	ps (process status):
+	````````````````
+		ps <options>
+			● –e (or –A) 			List all processes
+			● –f 					Extended format
+			● r (not –r) 			Shows only the “running” processes
+			● –u <user> 			Shows only the <user> processes
+
+
+	top:
+	````
+		Display and updates information about the system used resources, and the active processes
+
+
+	kill:
+	```
+		kill allows sending signal from the shell
+			"kill [–sig] pid"
+				sends signal sig to process with PID=pid
+			Option sig indicates the signal code
+			pid is the process identifier (PID) of the target process
+			The default signal of kill is SIGTERM, the	standard termination command
+
+		A signal sig can be indicated by means of its name or by its corresponding number. The list of the available signals can be obtained using the "–l" option
+			SIGKILL = KILL = 9
+			SIGUSR1 = USR1 = 10
+			SIGUSR2 = USR2 = 12
+			SIGALRM = ALRM = 14
+
+		Shell command killall terminates all process with a specified name
+			"killall -9 name"
+			Useful to terminate all processes generated by the same program avoiding to specify their PIDs
+
+
+	pipe:
+	A shell "pipe" = " | " connects the standard output of a sender process, and the standard input of a receiving process
+
+		"ls -la | more"
+		"ps | grep main"
+		"cat file1.txt file2.txt file3.txt | sort > sorted.txt"
+		"ls -laR *.c | wc"
+
+	
+	"/dev/null" // a special file
+		Writing on "/dev/null" does not produce any output ("/dev/null" is a sink)
+		Reading from /dev/null returns a sequence of zeros
+
+	! more > u04s07-pipeLinuxCommands.pdf
+
+
+
+
+
+---------------------------------------------------
+Notes:
+---------------------------------------------------
+What does void mean?
+	A pointer to void is a "generic" pointer type. A void * can be converted to any other pointer type without an explicit cast. You cannot dereference a void * or do pointer arithmetic with it; you must convert it to a pointer to an complete data type first.
+
+	more: "https://stackoverflow.com/questions/11626786/what-does-void-mean-and-how-to-use-it"
+
+
+
+Should I use "char ** argv" or "char * argv[]" in C?
+
+	more: "https://stackoverflow.com/questions/779910/should-i-use-char-argv-or-char-argv-in-c"

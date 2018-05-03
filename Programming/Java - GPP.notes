@@ -1,0 +1,91 @@
+Java - Good Programming Practice
+// 2017 / tab-size = 2
+---------------------------
+
+
+Chapter 08
+--------------
+	341:
+		Invoke every "static" method by using the class name and a dot (.) to emphasize that the method being called is a "static" method
+		--> className.methodName();
+
+	344:
+		A "final" field should also be declared "static" if it’s initialized in its declaration to a value that’s the same for all objects of the class. After this initialization, its value can never change. Therefore, we don’t need a separate copy of the field for every object of the class. Making the field "static" enables all objects of the class to share the "final" field.
+
+
+
+Chapter 09
+----------------
+	387:
+		Java ensures that even if a constructor does not assign a value to an instance variable, the variable is still initialized to its default value (e.g., "0" for primitive numeric types, "false" for booleans, "null" for references).
+
+
+Chapter 10
+---------------
+	398:
+		Polymorphism enables you to deal in generalities and let the execution-time environment handle the specifics. You can tell objects to behave in manners appropriate to those objects, without knowing their specific types, as long as they belong to the same inheritance hierarchy.
+
+
+		Polymorphism promotes extensibility: Software that invokes polymorphic behavior is independent of the object types to which messages are sent. New object types that can respond to existing method calls can be incorporated into a system without modifying the base system. Only client code that instantiates new objects must be modified to  ccommodate new types.
+
+
+	402:
+		An abstract class declares common attributes and behaviors (both abstract and concrete) of the various classes in a class hierarchy. An abstract class typically contains one or more abstract methods that subclasses must override if they are to be concrete. The instance variables and concrete methods of an abstract class are subject to the normal rules of inheritance.
+
+	419:
+		Although the actual method that’s called depends on the runtime type of the object to which a variable refers, a variable can be used to invoke only those methods that are members of that variable’s type, which the compiler verifies.
+
+
+	420:
+		In the Java API, the vast majority of classes are not declared "final". This enables inheritance and polymorphism. However, in some cases, it’s important to declare classes "final". typically for security reasons. Also, unless you carefully design a class for extension, you should declare the class as "final" to avoid (often subtle) errors.
+
+
+		Do not call overridable methods from constructors. When creating a "subclass" object, this could lead to an overridden method being called before the "subclass" object is fully initialized. 
+		Recall that when you construct a "subclass" object, its "constructor" first calls one of the direct superclass’s constructors. If the superclass "constructor" calls an overridable method, the "subclass’s" version of that method will be called by the superclass "constructor". before the "subclass" "constructor’s" body has a chance to execute. This could lead to subtle, difficult-todetect errors if the "subclass" method that was called depends on initialization that has not yet been performed in the "subclass" "constructor’s" body.
+		It’s acceptable to call a "static" method from a "constructor". For example, a "constructor" and a "set method" often perform the same validation for a particular instance variable. If the validation code is brief, it’s acceptible to duplicate it in the constructor and the "set method". If lengthier validation is required, define a "static" validation method (typically a private helper method) then call it from the "constructor" and the "set method". It’s also acceptable for a "constructor" to call a "final" instance method, provided that the method does not directly or indirectly call an overridable instance method.
+
+
+	421:
+		According to the Java Language Specification, it’s proper style to declare an interface’s abstract methods without keywords "public" and "abstract", because they’re redundant in interface-method declarations. Similarly, an interface’s constants should be declared without keywords "public", "static" and "final", because they, too, are redundant.
+
+
+	426:
+		A class can "extend only one" other class but can "implement many interfaces"
+
+
+		All objects of a class that implements multiple interfaces have the is-a relationship with each implemented interface type.
+
+
+
+	429:
+		When a method parameter is declared with a superclass or interface type, the method processes the object passed as an argument polymorphically.
+
+
+		Using a superclass reference, we can polymorphically invoke any method declared in the superclass and its superclasses (e.g., class Object). Using an interface reference, we can polymorphically invoke any method declared in the interface, its superinterfaces (one interface can extend another) and in class Object—a variable of an interface type must refer to an object to call methods, and all objects have the methods of class Object.
+
+
+
+Chapter 11
+-------------
+	448:
+		Exceptions may surface through explicitly mentioned code in a "try" block, through deeply nested method calls initiated by code in a "try" block or from the Java Virtual Machine as it executes Java bytecodes.
+
+
+	451:
+		Incorporate your exception-handling and error-recovery strategy into your system from the inception of the design process—including these after a system has been implemented can be difficult.
+
+
+	453:
+		If your method calls other methods that throw checked exceptions, those exceptions must be caught or declared. If an exception can be handled meaningfully in a method, the method should catch the exception rather than declare it.
+
+
+	455:
+		Always release a resource explicitly and at the earliest possible moment at which it’s no longer needed. This makes resources available for reuse as early as possible, thus improving resource utilization and program performance.
+
+	457:
+		When "toString" is invoked on any Throwable object, its resulting "String" includes the descriptive "string" that was supplied to the constructor, or simply the class name if no "string" was supplied.
+
+		Throw exceptions from "constructors" to indicate that the constructor parameters are not valid—this prevents an object from being created in an invalid state.
+
+		Exception handling removes error-processing code from the main line of a program’s code to improve program clarity. Do not place "try…catch… finally" around every statement that may throw an exception. This decreases readability. Rather, place one "try" block around a significant portion of your code, follow the "try" with catch blocks that handle each possible exception and follow the catch blocks with a single "finally" block (if one is required).
+

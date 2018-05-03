@@ -1,0 +1,1169 @@
+// 2016/12/29
+// this file is based on the slides
+// i tried to add some notes from videos and other sources
+
+--------------------------------------------------------------------
+Assembly 8086			--> MASM 6.0
+--------------------------------------------------------------------
+
+
+
+--- Watch This, nice Instruction-----------------------------
+https://youtu.be/cNN_tTXABUA
+--------------------------------------------------------------------
+
+
+
+--- MASM ----------------------------------------------------------------
+! MASM is in decimal, if you put 15, it is converted to "F"	
+! insted of assuming it as 15h, so be careful			
+----------------------------------------------------------------------------
+
+
+
+Registers of the CPU
+-----------------------------------------------------------
+	AX 	-->	Accumulator		Register
+	BX 	--> 	Base 			Register
+	CX 	--> 	Counter		Register
+	DX 	--> 	Data 			Register
+
+
+	// The followings are 1 part only
+	BP 	--> 	Base Pointer		Register
+	SP 	--> 	Stack Pointer		Register
+
+	DI 	--> 	Destination Index 	Register
+	SI 	--> 	Source Index		Register
+
+	IP 	--> 	Instruction Pointer	Register
+
+	CS 	--> 	Code Segment		Register
+	SS 	--> 	Stack Segment		Register
+	DS 	--> 	Data Segment		Register
+	ES 	--> 	Extra Segment		Register
+
+
+
+
+
+
+
+Structure of Register 		| AX, BX, CX, DX |
+-------------------------------------------------------------
+	AX 	= 16 bit 
+		15 -->	   8	7  -->   0
+		-------------------------------
+		AH 		AL 					//all data in HEX
+		00000000 	0000000 			-->  	0000 0000 0000 0000
+									F       F       F       F
+
+
+
+
+
+
+
+
+Memory Structure
+---------------------------------------------------------
+* The Structure is LITTLE ENDIAN so the data is stored reversely * 
+Memory address is reserved. like:
+	a = 12345678h 	--> 	78	[4000]
+					56 	[4001]
+					34	[4002]
+					12 	[4003]
+
+	location of the data is like this.
+	//it will be explained more in future
+						"a + 0" = 78
+						"a + 1" = 56
+						"a + 2" = 34
+						"a + 3" = 12
+
+
+	The  CPU can only use 16 bit of memory, but it can address to 20 bits.
+	we have to use "DS" and "IP" to extend the 16 bit to 20 bit.
+
+	DS:	1220
+	IP: 	0045
+		|		//add a "0" at the end of DS to add 4 more bits
+		|		// then add them
+		|_____ 	DS:	1220"0"
+			IP: 	  004 5
+			--------------------
+				1224 5 	<-- 	this is the physical address
+						that CPU fetches data from
+
+
+
+
+
+
+
+Variable
+--------------------------------------------------------------
+.data 		--> in MASM
+--------------------------------------------------------------
+
+	! NOTE: if the variable`s valuse starts with A..to..F, you must add a "0" at the beginning
+
+	Binary 			01001011b
+	Octal 			575O or 575Q
+	Decimal 		125D 			// MASM is deciaml in default, so 125 = 125D
+	Hexadecimal 		0F12h
+	Character 		'joe' or "joe"
+	Floating Point 		0.34E-1
+
+	// defining constanant
+	const_name	EQU		xx 				
+
+
+	// defining variable
+	var_name		DB 	xx
+				// a Byte number 	= 8 bits
+
+	var_name		DW 	xxxx
+				// a Word number 	= 16 bits 
+
+	
+	var_name		DD 	0.34E-1
+	var_name		DD 	xxxxxxxx
+				// a Doubleword 	= 32 bits  /  2 Registers /
+
+	var_name		DQ 	xxxxxxxxxxxxxxxx
+				// a Quadword 		= 64 bits
+
+
+	// defining array
+	array_name		DB 	xx 		DUP 	(?)
+					//^^ size of array
+
+	// it repeats const_name-Times of cells with value 0
+	array_name		DB 	const_name	DUP 	(0)	
+
+	// it repeats const_name-Times of cells 3 cells with values ?,?,?
+	array_name 		DB 	const_name 	DUP 	(?,?,?)
+
+	// it repeats 1,2,3,4 four times inside Memory
+	array_name		DB 	4 		DUP	(1,2,3,4)
+
+	// it repeats xx six times (3 * 2 = 6)
+	array_name		DB 	3*2 		DUP	(xx)
+
+	//MIXED
+	// it consists: 5, 0, 6, and 4 times (1,2,3,4)
+	array_name 		DB	5, ?, 6, 4 	DUP	(1,2,3,4)
+
+
+
+
+
+--- SIGNED / UNSIGNED --------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------
+"UNSIGNED" means that the MSB, doesnt change the sign of a number.
+	for example "X = 10000011" is equal to "131 in Decimal"
+	but if "X" was SIGNED, it would be interpreted as "-125", because the MSB is "1"
+
+
+	If we want to convert a BYTE number to a WORD, we add "AH" part
+	-> SIGNED AX
+		AH 		AL 
+		0000 0000	0011 1001
+
+	-> UNSIGNED AX
+		AH 		AL
+		1111 1111 	1011 0011
+
+
+
+
+
+
+--- Flags -----------------------------------------------
+----------------------------------------------------------
+* ONLY last calculation will effect it * 
+	. Zero
+	. Sign
+	. Carry
+	. Overflow
+	. Parity
+	. Auxiliary Carry
+	. Trap
+	. Interupt
+	. Direction
+
+	
+
+Zero Flag:
+	it is set to 1 when the last calculation is zero.
+	no matter what is happened.
+	if the previous result is 0 so the ZF = 1
+
+
+Sign Flag:
+	it is set to 1 if the result of previous Calculation is negetive. 
+
+
+Carry Flag:
+	! for UNSIGNED numbers 
+	if the last Addition creates a carry.
+	. it is UNSIGNED condition. it assumes positive numbers.
+	. NOTE that SUBtraction can also makes carry, like (23-53) where we need a carry [= borrow]. no matter the result is negative.
+
+
+Overflow Flag:
+	! for SIGNED numbers
+	Addition:
+		. Set if sum of two positive numbers give a negative number.
+		. Set if sum of two negative numbers give positive number.
+
+	Subtraction:
+		. Set if "pos - neg" has a negative result.
+		. Set if "neg - pos" has a positive result.
+
+
+
+
+
+
+
+
+
+Functions
+--------------------------------------------------------------
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+MOV 		dst, src 		;it is a sample comment
+		! src and dst must be the same size , 8 or 16 bits
+		1. it copies the data from "src" into "dst"
+		2. both can`t be variable
+		3. none can be IP or Flag register
+
+
+	* EXAMPLE *
+		mov ax, bx
+		
+		mov al, bl 	|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+				! note the register is not important, only SIZE 
+		mov al, bh 	|///////////////////////////////////////////////////
+
+		mov ax, var_a 	// based on the variable "var_a", it puts the first
+				// data of the "var_a" into ax.
+
+		mov var_name + 0, 0123
+		mov var_name + 1, 4567
+				// "var_name" is an array of DW 
+				// it puts value "X" inside the second block
+				--> Memory Schema:
+					var_name[0]:	[4000] : [al]  : [23]
+							[4001] : [ah] : [01]
+					var_name[1]:	[4002] : [al]  : [67]
+							[4003] : [ah] : [45]
+
+				// VERY IMPORTANT
+				// compiler translate "var_name + 1" as 
+				// "address of var_name + 1", it is not an ADD operation
+				// because we can ONLY do one operation per line
+
+		MOV DS, ES 	// it is wrong
+				--> 	MOV ax, ES
+					MOV DS, ax
+
+
+		!How to find a variable location?
+		MOV AX, OFFSET var_name		// it puts the location of var_name
+							// in memory, into AX
+
+
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+LEA 		dst, [expression]	;//equal to  -->    MOV dst, OFFSET [expression]
+		
+		1. calculates expression and stores the result inside dst
+		2. doesnt actually access any memory. only calculates the resulting "address"
+		3. can be used to calculates "addresses" , or any other calculations
+		4. no Flag affected
+		5. dst has to be a register
+
+
+	expression:
+		must be SI or BX
+
+		// wrong
+		LEA [ax], [ax + 1]
+		LEA ax, si
+
+	* EXAMPLE *
+		* VERY IMPORTANT *
+		// gives the address 			// gives WORD number BX
+		//    of WORD number BX 		//    actual data inside address
+		"LEA" AX, [SI + BX]			"MOV" AX, [SI + BX]
+	
+
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+XCHG 		dst, src 		; // exchange the data of two expression
+		1. both must be the same size
+		2. no Flag affected
+
+	* EXAMPLE *
+		// exchange two variables X and Y
+		XCHG 	X, Y 				!WRONG: both cant be variable ! 	
+
+		* Solution *
+		MOV 	AX, X 
+		XCHG 	AX, Y
+		MOV 	X, AX
+
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+ADD 		dst, src 
+		!  both must be the same SIZE   !
+		1. Flags are affected
+		2. one operand must be a register
+		3. both cant be variables
+
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+ADC 		dst, src 		; // ADD with Carry Flag
+		!  both must be the same SIZE   !
+		1. Flags are affected
+		2. one operand must be a register
+		3. both cant be variables
+
+		--> dst + src + CF
+		// mostly used when we are handling big numbers, like 32 bits, 48 bits, ...
+
+	*EXAMPLE*
+		add two 32 bits numbers:
+			MOV 	AX, WORD PTR FIRST 
+			MOV 	BX, WORD PTR FIRST + 2
+			ADD 	AX, WORD PTR SECOND 
+			ADC 	BX, WORD PTR SECOND + 2
+			MOV 	WORD PTR RESULT , AX
+			MOV 	WORD PTR RESULT + 2, BX
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+SUB 		dst, src 
+		!  both must be the same SIZE   !
+		1. Flags are affected
+		2. one operand must be a register
+		3. both cant be variables
+
+		--> dst = dst - src
+
+	*EXAMPLE*
+		BX = 5 - BX
+			-->	Neg BX 		or 		Sub Bx, 5
+				Add Bx, 5				Neg BX
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+SBB 		dst, src 		; // Subtraction with borrow [= CF]
+		!  both must be the same SIZE   !
+		1. Flags are affected
+		2. one operand must be a register
+		3. both cant be variables
+
+		--> dst = dst - src - CF
+
+
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+MUL 		XX			;
+		!  Numbers are assumed UNSIGNED = ONLY POSITIVE  ! 
+		!  XX must be the BYTE or WORD  !
+		1. only CF and OF Flags are affected, no more
+		2. it cant be Constant
+
+		-> XX = BYTE 					-> XX = WORD
+			--> AX = AL * XX 				 --> DX:AX = AX * XX
+
+		
+			
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+IMUL 		XX			;
+		!  Numbers are assumed SIGNED  !
+		!  XX must be the BYTE or WORD  !
+		1. only CF and OF Flags are affected, no more
+		2. it cant be Constant
+
+		-> XX = BYTE 					-> XX = WORD
+			--> AX = AL * XX 				 --> DX:AX = AX * XX
+
+
+
+
+! Multipilication of two 32 bit data, page 96 of the book !
+
+
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+DIV 		XX			;
+		!  Numbers are assumed UNSIGNED = ONLY POSITIVE  !
+		!  XX must be the BYTE or WORD  !
+		1. NO Flags affected
+		2. it cant be Constant
+
+		-> XX = BYTE 					-> XX = WORD
+			--> AX / xx 					--> DX:AX / xx
+				---> Quotient inside AL 			---> Quotient inside AX
+				---> Remainder inside AH			---> Remainder inside DX
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+IDIV 		XX			;
+		!  Numbers are assumed SIGNED   !
+		!  XX must be the BYTE or WORD  !
+		1. NO Flags affected
+		2. it cant be Constant
+
+		-> XX = BYTE 					-> XX = WORD
+			--> AX / xx 					--> DX:AX / xx
+				---> Quotient inside AL 			---> Quotient inside AX
+				---> Remainder inside AH			---> Remainder inside DX
+
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+INC 		XX 	 		 
+		1. Flags are affected
+
+		--> XX = XX + 1
+
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+DEC 		XX 	 		
+		1. Flags are affected
+
+		--> XX = XX - 1
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+NEG 		XX 	 		; // 2`s complement
+		1. Flags are affected
+
+		--> XX =  - (XX)
+
+
+
+
+
+
+
+
+
+Addressing Modes
+----------------------------------------------------------------------
+* Address can be changed at compile time by compiler *
+* Contents can be changed at run time ONLY by CPU *
+
+
+CPU 					Memory
+---------------				-----------------------
+Register 				Direct
+Constant 				Indirect
+
+	1. Immediate
+	---------------------------
+		MOV 	ax, 10
+
+	
+	2. Direct
+	---------------------------
+		MOV 	ax, variable
+
+	
+	3. Register Direct
+	--------------------------
+		MOV 	ax, bx
+			//AX, BX, CX, DX, BP, SI, DI
+
+	
+	4. Register Indirect
+	--------------------------
+		MOV 	ax, [BX]
+			//src can be BP, BX, SI, DI
+
+	
+	5. Biased 
+	--------------------------
+		MOV 	ax, [BX]+4
+		MOV 	ax, [BX+4]
+		MOV 	ax, 4[BX]
+			//src can be BP, BX, SI, DI
+
+	
+	6. Indirect		//it can be used for Matrix 
+	---------------------------
+		[SI] -->[BX]
+		       \/	
+		       /\		_______
+		[DI]-->[BP]		|
+					|
+					var_name [SI] [BX]		inside DS 
+					var_name [SI] [BP]		inside SS
+					var_name [DI] [BX]		inside DS 
+					var_name [DI] [BP]		inside SS
+					// Address of "var_name" +
+					// Content of SI or DI +
+					// Content of BX or BP
+
+		i. each time [BP] is used, then the default Segment register involved is SS
+		ii. use [BP] to point a cell inside Data Segment pointed by DS (override) 
+			 --> DS:var[BP]
+
+
+	7. Indirect Biased
+	---------------------------
+		MOV 	AX, var[BX][DI]
+		MOV 	AX, [BX+2][DI]
+		MOV 	AX, [BX][DI+2]
+
+
+
+
+--- [ Bracket Addressing] -------------------------------------------
+--- VERY IMPORTANT -----------------------------------------------
+
+1. the minimum size of doing any operation on Memory is BYTE.
+2. you can choose the size of reading: DD, DW, DB
+
+	* Example *
+		
+		add 	ax, [cx]
+		// inside MEMORY, go to the address where is equal to CX value
+		// then put the value inside that location into AX
+		! every time you see a Bracket, it means a location in MEMORY 
+		
+
+		not 	Byte PTR [bx]
+		// it goes to the address of BX, and gets a BYTE SIZE of data, NOTs it and 
+		//	change the data there.
+		
+
+		// wrong. SIZE  must be chosen
+		mov 	[bx], 3 		--> 	mov  "Byte PTR" [bx], 3
+						-->	mov  "Word PTR" [bx], 3
+						-->	mov  "DWord PTR" [bx], 3
+
+
+		mov Word PTR [cx + 1], 3
+
+		// maybe these dont work in MASM 6
+		mov Word PTR [cx + si], 3
+		mov Word PTR [cx + si * 2], 3
+		mov Word PTR [cx + si * 2 + 3], 3
+
+		// it wont work. at most 2 registers
+		mov Word PTR [cx + si + di], 3 
+
+		// it wont work. at most 1 memory handle available
+		mov word PTR [cx], word PTR [si]
+
+
+
+
+
+--- Jump --------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+JMP  		"LABEL"
+		* it changes IP value *
+
+
+JZ / JE 		"LABEL"
+		jumps if only the ZF = 1 [set]
+		based on the result of previous calculation.
+
+
+JNZ / JNE	"LABEL"
+		jump if only the ZF = 0 [not set]
+
+
+JS 	 	SIGN FLAG
+JNS
+
+
+JC 	 	CARRY FLAG
+JNC
+
+
+JO 		OVERFLOW FLAG
+JNO
+
+
+JP / JPE 	Parity Flags
+JNP / JPO 	
+
+
+JCXZ		IF CX = 0 , THEN JUMP
+
+
+
+--- Compare ---------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+CMP 	x, y 
+	it compares two values without saving anything. 
+	(~ SUBtraction = SUB x, y => x - y)
+
+	! ONLY UNSIGNED             						  !
+	JB	jump if Below				[JC]	~ CF = 1 
+		--> x < y
+
+	JBE	jump if Below or Equal			~ CF = 1 or ZF = 1
+		--> x <= y
+
+	JA	jump if Above					~ CF = 0 &  ZF = 1
+		--> x > y
+
+	JAE	jump if Above or Equal		[JNC]	~ CF = 0
+		--> x >= y
+
+	JE 	jump if Equal
+		--> x = y
+	!                            						            !
+
+
+	! ONLY SIGNED             						  !
+	JL	jump if Less				[JC]	~ SF  =  OF & ZF = 0
+		--> x < y
+
+	JLE	jump if Less or Equal				~ SF  =  OF
+		--> x <= y
+
+	JG	jump if Greater				~ SF <> OF
+		--> x > y
+
+	JGE	jump if Greater or Equal		[JNC]	~ SF <> OF or  ZF = 1
+		--> x >= y
+
+	JE 	jump if Equal
+		--> x = y		
+	!                            						            !
+
+
+
+
+--- Loop ---------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------
+The main parameter of Loop is "CX". every time we get to the "LOOP", "CX" is automitically decreased by 1 and then it checks if it is not "0", it keeps the Loop running.
+
+The Structure:
+
+		MOV  CX, 10
+	MY_LOOP:
+		...
+		...
+		LOOP MY_LOOP
+
+
+
+Foor Loop Structure in Assembly
+* note the condition is located in the last line *
+
+	// in C++			// with CX 				// without CX
+	[]
+						mov cx, 0				mov cx, 100
+	for cx from 0 to 99 do:	for_loop:				for_loop:
+		ax = ax + cx;			add ax, cx 				add ax, cx
+						inc cx			
+						cmp cx, 100d
+	end for 				jnz for_loop 				Loop for_loop
+	[]
+
+
+
+
+	LoopE 		xx	--> if CX <> 0 and ZF = 1
+	LoopZ		xx 	-->
+
+	LoopNE	xx 	--> if CX <> 0 and ZF = 0
+	LoopNZ 	xx 	--> 
+
+
+
+While Loop Structure in Assembly
+* note the condition is located in the first line *
+
+	[]
+	cx = 0;						mov cx, 0
+	ax = 0;						mov ax, 0
+	while ax < 1000 do:			while_loop:
+							cmp ax, 1000d
+							jae   end
+		ax = ax + cx;				add  ax, cx
+		cx = cx + 1;				inc   cx
+							jmp  while_loop
+	end while 				end:
+	[]	
+
+
+
+
+
+
+
+
+--- Bitwise Operations ---------------------------------------
+------------------------------------------------------------------
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+NOT 		xx	 		; // it flips every bits
+		. both must be the same size
+		. both cant be variable
+		! NO FLAGS AFFECTED   !
+
+		* Example *
+			NOT  00010101 	-->	11101010
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+AND 		dst, src 		; // it does AND operation on every bits
+		. both must be the same size
+		. both cant be variable
+		! FLAGS AFFECTED    !
+
+		#x 	y 	AND
+		0 	0 	0
+		1 	0 	0
+		0 	1 	0
+		1 	1 	1
+		
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+OR 		dst, src 		; // it does OR operation on every bits
+		. both must be the same size
+		. both cant be variable
+		! FLAGS AFFECTED    !
+
+		#x 	y 	OR
+		0 	0 	0
+		1 	0 	1
+		0 	1 	1
+		1 	1 	1	
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+XOR		dst, src 		; // it does XOR operation on every bits
+		. both must be the same size
+		. both cant be variable
+		! FLAGS AFFECTED    !
+
+		#x 	y 	AND
+		0 	0 	0
+		1 	0 	1
+		0 	1 	1
+		1 	1 	0	
+
+		!  XOR AX, AX    !  --> MOV AX, 0
+
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+TEST 		dst, src 		; // it is exactly AND, but wont store anything, just touches Flags
+		. both must be the same size
+		. both cant be variable
+		! ONLY FLAGS AFFECTED    !
+
+
+
+
+
+
+--- SHIFT Operations --------------------------------------------------
+--- only for UNSIGNED numbers ----------------------------------------
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+SHL		dst, k 			; // it SHIFTs the bits "k" times to left 
+		. insert MSB in Carry Flag
+		. puts 0 in LSB ! k ! times
+				!   it can only be stored in CL    
+		. it multiply by 2^k
+		! it always put 0, even if CF = 1   !
+		! FLAGS ARE AFFECTED!
+
+		[ CF ] <----------- [ Destination ] <------ 0
+
+
+	* Example *
+		MOV AL, 01001011B
+		MOV CL, 2
+		SHL  AL, "CL"				-->	AL = 1001011"0"
+							-->	CF = 0
+
+							Carry F	
+							[-] 	[0] [1] [0] [0] [1] [0] [1] [1] "0"
+							_____/	 __/ __/ __/__/ __/__/__/___/
+							[0] 	[1] [0] [0] [1] [0] [1] [1] ["0"]
+
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+SHR		dst, k 			; // it SHIFTs the bits "k" times to right
+		. insert LSB in Carry Flag
+		. puts 0 in MSB ! k ! times
+				 ! it can only be stored in CL    
+		. it devide by 2^k
+		! it always put 0, even if CF = 1   !
+		! FLAGS ARE AFFECTED!
+
+		0 ------> [ Destination ] ------> [ CF ]
+
+
+
+
+--- Arithmetic SHIFT Operations -------------------------------------
+--- for SIGNED numbers ------------------------------------------------
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+SAL		dst, k 			; // it SHIFTs the bits "k" times to left
+		. it behaves like SHL
+		! FLAGS ARE AFFECTED!
+
+		[ CF ] <----------- [ Destination ] <------ 0
+
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+SAR		dst, k 			; // it SHIFTs the bits "k" times and fills with MSB
+		. inserts 0 if MSB = 0
+		. inserts 1 if the MSB = 1
+		! FLAGS ARE AFFECTED!
+
+		 MSB
+		[ 0/1 ]  ------> [ Destination ] ------> [ CF ]
+
+
+
+
+
+--- ROTATE Operations --------------------------------------------------
+------------------------------------------------------------------------------
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+ROL		dst, k 			; // it Rotate the bits "k" times to the left
+		. a copy of MSB goes inside CF
+		! FLAGS ARE AFFECTED !
+
+		[CF]<----.<---[ Destination ]<----.<----
+		      	  |----------->-------------->|
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+ROR		dst, k 			; // it Rotate the bits "k" times to the right
+		. a copy of LSB goes inside CL
+
+		---->.--->[ Destination ]---->.---->[ CF ]
+		      |<--------------<----------|
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+RCL		dst, k 			; // it Rotate left through Carry Flag
+		. a copy of MSB goes inside CF
+		. data in CF goes 
+		! FLAGS ARE AFFECTED !
+
+		[CF]<-------[ Destination ]<----.<----
+		   |-------------->---------------->|
+
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+RCR		dst, k 			; // it Rotate right through Carry Flag
+		. a copy of LSB goes inside CF
+		. data in CF goes 
+		! FLAGS ARE AFFECTED !
+
+		---->.--->[ Destination ]-------->[ CF ]
+		      |<--------------<------------------|
+
+
+
+
+
+
+--- Flag Operations --------------------------------------------------------------
+-------------------------------------------------------------------------------------
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+CLC 					; // Clear CF
+STC 					; // Set CF 
+CMC					; // 2`s complement CF
+
+CLD 					; // Clear DF (Direction Flag)
+STD 					; // Set DF
+
+CLI 					; // Clear IF
+STI 					; // Set IF
+
+
+LAHF 					; // Load bits 0-7 of Flag Register into AH
+		. NO FLAGS AFFECTED
+		.  only from 0 to 7, bits 0, 2, 4, 6, 7
+
+		Flag register 				AH
+		-------------------- 			-----------
+		15	8-7	0			7	0
+		|	   |........|	---------> 	|	|
+
+
+
+SAHF 					; // Save bits 0-7 of AH into Flag Register
+		. NO FLAGS AFFECTED
+		. only from 0 to 7, the rest is left unchanged
+
+		AH 					Flag Register
+		------------- 				-------------------
+		7 -------- 0				15/8 | 7 ------- 0
+
+		
+
+
+
+--- Characters -----------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
+Char 		Hex 	Binary		Decimal
+--------------------------------------------------------
+A 		41H 	01000001	65
+a 		61H 	01100001	97
+
+Z 		5AH	01011010	90
+z 		7AH 	01111010	122
+
+
+Convert 
+-------------------------------
+A --> a 	--> 	OR   A, 00100001B 	; // bit #5 will be added
+
+a --> A 	--> 	AND a, 11011111B 	; // bit #5 will be removed
+
+
+
+
+
+
+
+
+
+
+
+
+--- STACK ----------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+1. Assembly`s Stack is LIFO
+2. Data are DW
+3. SP is the top of the stack, and ALWAYS shows the address of last input
+4. SS is the start of Stack Segment 
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+PUSH 		xx 			; // insert into Stack
+		. xx must be DW
+		. xx can ALSO be SS, DS, ES
+		. NO FLAGS AFFECTED
+		. SP is reduced by 2
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+POP 		xx 			; // throws out from Stack
+		. xx must be DW
+		. xx can ALSO be SS, DS, ES
+		. NO FLAGS AFFECTED
+		. SP is increased by 2
+
+
+
+operation 	operands 		; comment
+------------ 	------------ 		--------------
+PUSHF 		 			; // inserts Flag Register into Stack
+POPF 					; // throws out Flag Register from Stack
+		. after POPF, FLAGS ARE AFFECTED
+
+		
+
+--- Procedure / Macro --------------------------------------------------------
+---------------------------------------------------------------------------------
+Differences:
+	1. Structure and Usage
+	2. Procedure is always created, but Macros are created once called.
+	3. Macros can have parameters, like a function
+
+
+
+
+Procedure Use:
+	
+	CALL 	proc_name
+
+
+Procedure Structure:
+	
+	proc_name	PROC 	Near
+			...
+			...
+			...
+			RET
+	proc_name 	ENDP
+
+	. ! NO FLAGS AFFECTED   
+	. RETurn address is kept in Stack
+
+
+
+
+Macro Use:
+	macro_name 				// just type it, like CLC [clear carry]
+
+	macro_name	P1, P2, P3, ...		// if it has any parameters
+
+Macro Structure:
+
+					//Parameters
+	macro_name 	Macro 		P1, P2, P3, ...
+			...
+			...
+			...
+			ENDM
+
+
+! skipped from page 169 to 183                      
+
+
+
+
+--- Interupts ------------------------------------------------------------------
+---------------------------------------------------------------------------------
+
+! skipped from page 185 to 201                     
+
+lots of interups, some good ones:
+	!NOTE: numbers less than 16, have no difference to be written in HEX or Decimal mode!
+	
+	--- Clear screen:
+		mov ah, 0
+		mov al, 3
+		int 10h
+
+
+	--- move cursor in a specific location:
+		mov ah, 2
+		mov bh, 0
+		mov dh, 13 	;row number 		0<x<24
+		mov dl, 40 	;column number 	0<x<79
+
+
+	--- get input one Character and puts inside AL and shows on screen:
+		mov ah, 1			--> Example:
+		int 21h					GET_KEY: 
+								mov ah, 1
+								int 21h
+								cmp al, "Y"
+								je  YES
+								cmp al, "N"
+								je  NO
+								jne GET_KEY
+
+
+	--- get input one String and shows on screen:
+		mov ah, 0Ah
+		int 21h
+
+
+	--- back to DOS:
+		mov ax, 4c00h
+		int 21h
+
+
+	--- write A on screen:
+		mov ah, 2
+		mov dl, 65 	;ASCII code for "A"
+		int 21h
+
+
+	--- create new line:
+		mov ah, 2
+		mov dl, 0Dh 	;ASCII code "13" for "New Line"
+		int 21h
+		mov dl, 0Ah 	;ASCII code "10" for "Carriage"
+		int 21h
+
+
+! skipped from 205
+
+

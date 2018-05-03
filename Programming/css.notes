@@ -1,0 +1,63 @@
+CSS:
+--------------------------
+use inside HTML page Header
+	<style type="text/css">
+		// any code here
+	</style>
+
+or an external ".css" file
+	<link href="style.css" rel=stylesheet type=“text/css”>
+
+or inline
+	<p style="font-size: 12pt; color: red"> paragraph with text size 12 points in red</p>
+
+	! As the "style" gets closer to the element, it will affect instead.
+
+	[css]
+		p, h1{ 
+			/* 	selector: selects the set of elements affected by the declaration
+				also multiple elements can use the same values
+				<p>ssss</p>
+			*/
+			text-align: center; 
+			color: red;
+		}
+
+		#id_name {
+			/* id selector: only affects elements that have "id" name 
+				<p id="id_name">ssss</p>
+			*/
+		}
+
+		.class_name {
+			/* class selector : ONLY elements that have a specific class name
+				<p class="class_name">ssss</p>
+			*/
+		}
+
+		element.class_name{
+			/* multiple selector : elements + a specific class name
+				<element class="class_name">ssss</element>
+			*/
+		}
+
+		a[href*='google.com']{
+			/*
+				codes.....
+			*/
+		}
+	
+		. Box Elements
+			Content: the content of the box, where text and images appear
+			Padding: clears an area around the content (affected by the background color of the box)
+			Border: a border that goes around the padding and content (affected by the background color of the box)
+			Margin: clears an area around the border (no background color, completely transparent)
+
+		. Positioning Schemes:
+			Static: normal flow (default)
+				offset values (top, bottom, left, right) have no effect
+			Relative: offset values are relative to the block position in the normal flow. If a relative block B follows a relative block A,
+				the offset of B is respect to the position of A without the offset
+			Absolute: the box position is determined by the offset properties and is relative to the containing block
+			Fixed: the box is fixed with respect to some reference (the viewport, normally) : offset relative to the viewport
+	[end]

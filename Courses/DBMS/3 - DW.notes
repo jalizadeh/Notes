@@ -1,0 +1,21 @@
+Datawarehousing:
+-----------------------------------------
+
+
+for drawing the diagram, you need to find the FACTs first.
+	1. find NOT AGGREGATABLE FEATURES
+	2. and other NAFs
+	3. you found of what? so that is the FACT
+	4. any other FACTs
+
+	5. usually MEASUREs like date, location and ... are common between theme
+
+
+Write down FACT and MEASURE tables
+	1. fisrt complete MEASURE tables
+		i. underline Primary Keys (...ID)
+		ii. complete them, no need to mention their specific value
+			like: 	Season(SID, season)			<-- OK
+				Season(SID, spring,summer,...)	<-- NO
+
+	2. based on 1, complete the FACTs

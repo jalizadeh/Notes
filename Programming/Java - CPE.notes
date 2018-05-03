@@ -1,0 +1,116 @@
+Java - Common Programming Errors
+// 2017 / tab-size = 2
+---------------------------
+
+
+Chapter 08
+--------------
+	339:
+		A compilation error occurs if a static method calls an instance method in the same class by using only the method name. Similarly, a compilation error occurs if a static method attempts to access an instance variable in the same class by using only the variable name.
+
+
+		Referring to "this" in a static method is a compilation error.
+
+	343:
+		A compilation error occurs if a program attempts to import two or more classes’ static methods that have the same signature or static fields that have the same name.
+
+	344:
+		Attempting to modify a "final instance" variable after it’s initialized is a compilation error. Attempts to modify a "final instance" variable are caught at compilation time rather than causing execution-time errors.
+
+
+
+Chapter 09:
+-------------------------
+	364:
+		Methods of a subclass cannot directly access "private" members of their superclass. A subclass can change the state of "private" superclass instance variables only through "non-private" methods provided in the superclass and inherited by the subclass.
+
+		Declaring "private" instance variables helps you test, debug and correctly modify systems. If a subclass could access its "superclass’s private" instance variables, classes that inherit from that subclass could access the instance variables as well. This would propagate access to what should be "private" instance variables, and the benefits of information hiding would be lost.
+
+	369:
+		Though the "@Override" annotation is optional, declare overridden methods with it to ensure at compilation time that you defined their signatures correctly. It’s always better to find errors at compile time rather than at runtime.
+
+		It’s a compilation error to override a method with a more restricted access modifier. a "public" superclass method cannot become a "protected" or "private" subclass method; a "protected" superclass method cannot become a "private" subclass method. Doing so would break the "is-a relationship", which requires that all subclass objects be able to respond to method calls made to "public" methods declared in the superclass. If a "public" method, could be overridden as a "protected" or "private" method, the subclass objects would not be able to respond to the same method calls as superclass objects. Once a method is declared "public" in a superclass, the method remains "public" for all that class’s direct and indirect  ubclasses.
+
+	376:
+		At the design stage in an object-oriented system, you’ll often find that certain classes are closely related. You should “factor out” common instance variables and methods and  lace them in a superclass. Then use inheritance to develop subclasses, specializing them with capabilities beyond those inherited from the superclass.
+
+		Declaring a subclass does not affect its superclass’s source code. Inheritance preserves the integrity of the superclass.
+
+
+	378:
+		You learned previously that you should not call a class’s instance methods from its constructors. Calling a superclass constructor from a subclass constructor does not contradict this advice.
+
+
+	382:
+		Use the "protected" access modifier when a superclass should provide a method only to its subclasses and other classes in the same package, but not to other clients.
+
+
+		Declaring superclass instance variables "private" (as opposed to "protected") enables the superclass implementation of these instance variables to change without affecting ubclass implementations.
+
+		When possible, do not include "protected" instance variables in a superclass. Instead, include "non-private methods" that access "private" instance variables. This will help ensure that objects of the class maintain consistent states.
+
+
+	386:
+		When a superclass method is overridden in a subclass, the subclass version often calls the superclass version to do a portion of the work. Failure to prefix the superclass method  name with the keyword "super" and the dot (.) separator when calling the superclass’s method causes the subclass method to call itself, potentially creating an error called infinite recursion, which would eventually cause the method-call stack to overflow—a fatal runtime error.
+
+
+Chapter 10
+--------------
+	403:
+		Attempting to instantiate an object of an abstract class is a compilation error.
+
+
+		Failure to implement a superclass’s abstract methods in a subclass is a compilation error unless the subclass is also declared abstract.
+
+
+	407:
+		We’ve said that you should not call a class’s instance methods from its constructors. you can call static class methods and make the required call to one of the superclass’s  constructors. If you follow this advice, you’ll avoid the problem of calling the class’s overridable methods either directly or indirectly, which can lead to runtime errors.
+
+	418:
+		Assigning a superclass variable to a subclass variable is a compilation error.
+
+
+		When downcasting a reference, a "ClassCastException" occurs if the referenced object at execution time does not have an is-a relationship with the type specified in the cast operator.
+
+
+	420:
+		Attempting to declare a subclass of a final class is a compilation error.
+
+
+	422:
+		Failing to implement any method of an interface in a concrete class that "implements" the interface results in a compilation error indicating that the class must be declared "abstract".
+
+
+		
+Chapter 11
+--------------
+	448:
+		It’s a syntax error to place code between a "try" block and its corresponding "catch" blocks.
+
+
+	451:
+		"Class Error" and its subclasses represent abnormal situations that happen in the JVM. Most Errors happen infrequently and should not be caught by applications—it’s usually not possible for applications to recover from Errors.
+
+
+	453:
+		If a subclass method overrides a superclass method, it’s an error for the subclass method to list more exceptions in its "throws" clause than the superclass method does. However, a subclass’s "throws" clause can contain a subset of a superclass’s "throws" clause.
+
+
+		Although the compiler does not enforce the catch-or-declare requirement for unchecked exceptions, provide appropriate exception-handling code when it’s known that such exceptions might occur. For example, a program should process the "NumberFormatException" from "Integer" method parseInt, even though "NumberFormatException" is an indirect subclass of "RuntimeException" (and thus an unchecked exception). This makes your programs more robust.
+
+
+	454:
+		Placing a "catch" block for a superclass exception type before other "catch" blocks that "catch" subclass exception types would prevent those "catch" blocks from executing, so a compilation error occurs.
+
+
+		Catching subclass types individually is subject to error if you forget to test for one or more of the subclass types explicitly; catching the superclass guarantees that objects of all subclasses will be caught. Positioning a "catch" block for the superclass type after all other subclass "catch" blocks ensures that all subclass exceptions are eventually caught.
+
+
+		A subtle issue is that Java does not entirely eliminate memory leaks. Java will not garbagecollect an object until there are no remaining references to it. Thus, if you erroneously keep references to unwanted objects, memory leaks can occur.
+
+	458:
+		If an exception has not been caught when control enters a "finally" block and the "finally" block throws an exception that’s not caught in the "finally" block, the first exception will be lost and the exception from the "finally" block will be returned to the calling method.
+
+		Avoid placing in a "finally" block code that can throw an exception. If such code is required, enclose the code in a try…catch within the "finally" block.
+
+		Assuming that an exception thrown from a catch block will be processed by that catch block or any other catch block associated with the same try statement can lead to logic errors.

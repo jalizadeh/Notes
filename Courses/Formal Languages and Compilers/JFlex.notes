@@ -1,0 +1,1085 @@
+JFlex Tutorial
+----------------
+2017/05/05
+
+
+Introduction:
+----------------
+	it recieves a ".JFlex" file which consists "Regular Expressions" & convert it to a "Java Program" which can do our tasks based on the regular expressions
+
+
+
+
+Basic Rules of Regular Expressions:
+---------------------------------------------------------
+# some rules may be used only in JFlex
+# all rules can be tested on "www.regex101.com"
+# see how they work on "www.regexper.com"
+# create dummy text in "www.blindtextgenerator.com"
+
+# remember to enable:
+#	g -> global
+#	m -> multi line
+---------------------------------------------------------
+	1. Regular Expressions describe sequences of ASCII characters (20 operators)
+		-> " \ [ ] ^ - ? . * + | ( ) $ / { } % < >
+
+	2. Letters & numbers in the input string are described by the characters themselves
+		! case-sensitive --> "xyz" is not equal to "Xyz"
+		-> "  val1  " :: the input sequence "v" "a" "l" "1"
+
+
+	3. Non alphabetical characters are written in " ", avoid ambiguities with operators
+		-> "  xyz"++"  " :: the input sequence "x" "y" "z" "++"
+		! if it is not working, try " xyz\+\+ "
+
+	4. Non alphabetical characters can be also preceded by the "\" character
+		-> "  xyz\+\+  " :: the input sequence ‘x’ ‘y’ ‘z’ ‘+’ ‘+’
+		-> For operators: \" \\ \[ \] \^ \- \? \. \* \+ \| \( \) \$ \/ \{ \} \% \< \>
+
+		-> if "\" is used in front of a character:
+				! may not all work in JFlex 	 !
+				\a										--> "a"
+				\b										--> word boundary
+				\c										--> "c"
+				\d										--> digit 				-> [0-9]
+				\e										--> "e"
+				\f 										--> form feed
+				\g\h\i\j\k\l\m							--> "g" "h" "i" "j" "k" "l" "m"
+				\n										--> line feed
+				\o\p\q									--> "o" "p" "q"
+				\r										--> carrige return
+				\s										--> white space		-> [\t\r\n]
+				\t										--> tab
+				\u										--> "u"
+				\v										--> vertical tab
+				\w										--> word 				-> [A-Za-z0-9_]
+				\x\y\z 									--> "x" "y" "z"
+
+				\A										--> "A"
+				\B										--> non-word boundary
+				\C										--> "C"
+				\D										--> non-digit 			-> [^0-9]
+				\E\F\G\H\I\J\K\L\M\N\O\P\Q\R		--> "EFGHIJKLMNOPQR"
+				\S										--> non-white space 	-> [^\t\r\n]
+				\T\U\V									--> "TUV"
+				\W										--> non-word 			-> [^A-Za-z0-9_]
+				\X\Y\Z									--> "XYZ"
+
+
+	5. Character classes are identified by square brackets [ ]:
+		-> "[0123456789]" :: one of the digits inside brackets
+
+	6. In character classes, the "-" character is used to describe a range of characters
+		-> "[0-9]" 			:: a digit between 0 & 9
+		-> "[a-z]" 			:: any lower case letter
+		-> "[a-zA-Z0-9]" 	:: both lower case & upper case letters, as well as numbers
+
+	7. "-" in a character class, is either the first or the last character within the brackets
+		-> "[-+0-9]" :: a digit or a +/- sign in the input string
+
+	8. "^" at the beginning of a character class identifies a "negated character class"
+		-> "[^0-9]" :: any character except digits
+
+	9. The symbol "." (dot) identifies any character except newline
+
+	10. The newline character is described by the following regular expression
+		-> \n|\r|\r\n 		// "\r" line feed, "\n" carrige return
+		
+		. JFlex is written in Java, so generated scanners must be portable on both Windows & Linux operating systems. Note:
+			-> \n | \r | \r\n 	:: one newline
+			-> [\n\r]+ 			:: one or more newlines: \n\n\n\r\r...
+
+	11. The symbol "\t" identifies the tabulation character
+
+	12. "?" indicates that the preceding expression can be repeated 0 or 1 time
+		-> "ab?c" :: both ac & abc
+
+	13. "*" indicates that the preceding expression can be repeated 0 or more times
+		-> "ab*c" :: all the sequences starting with a, terminating with c and with any number of b’s in between
+
+	14. "+" indicates that the preceding expression can be repeated 1 or more times
+		-> "ab+c" :: all the sequences starting with a, terminating with c and with at least 1 b in between.
+
+	15. "{n}" represents n repetitions of the preceding expression
+		-> "ab{3}c" :: the sequence abbbc
+
+	16. "{n,m}" represents a repetition of the precedent expression between a minimum of n and a maximum of m times
+		-> "ab{2,4}c" :: the sequences abbc, abbbc and abbbbc
+
+		- if "{n,}" it has to have at least "n" repetition and there is no limitation for maximum
+
+	17. "|" represents two alternative expressions
+		-> "ab|cd" :: both the sequences -> ab and cd
+
+	18. "()" are used to express or modify operators priority
+		-> "(ab|cd+)?ef" :: sequences such as -> ef, abef, cdef, cdddef
+
+	19. "." matches any characters except "newline"
+		-> "c.t"  ::  cat, cut, but it wont accept "cast" or "cost"
+
+		-> for supporting more characters, use as many "." as you need.
+			"c..t" :: cost, coat
+
+	20. The character "^" at the beginning of a regular expression indicates that the sequence must be found at the beginning of the line. This means that either the character sequence is at the beginning of the input stream, or that the last character previously read was a "newline".
+
+	21. The character "$" at the end of a regular expression indicates that the sequence must be followed by a newline character. By default, the newline is not matched by the regular expression, and thus must be matched by another rule
+			-> "end$" 				:: The characters "end" at the end of the line
+			-> "\r | \n | \r\n" 		:: the newline
+
+		! if using any of "^" or "$" not that "multi line" must be used properly.
+
+	22. Using both "^" and "$" means only one expression in a single line.
+			-> "^\w+$"				:: Any single line with only one word and nothing more, even space
+
+
+	23. "\b" when there is a shift from Word Characters ([A-Za-z0-9_]) to a Non-Word Character.
+		-> "\bcall\b" 		:: " call ", but not "miscall", because before and after "call" there must not be any Word Characters.
+		-> "\b\w+\b"		:: "fifty"-"fifty", "http"://"www"."hi"."com"/ 
+
+		! "space" isn`t a Word Character
+		!  any characters except Word Characters are a "word boundary"
+		! "word boundary" isn`t a character itself. Just a reference to a position of zero-length character
+
+
+
+Some Examples:
+---------------------
+	Unsigned integer								[0-9]+
+	Unsigned integer without leading zeros		[1-9][0-9]*
+	Signed integer									[+-]?[0-9]+ or ("+"|"-")?[0-9]+
+	
+	Floating point number 				// supports  +/- XX.X or .XX or 0.XX
+		[+-]?([1-9][0-9]*\.[0-9]*)|(\.[0-9]+)|(0\.[0-9]*)
+		 or ("+"|"-")?([1-9][0-9]*"."[0-9]*)|("."[0-9]+)|(0"."[0-9]*)
+
+
+
+
+JFlex Source Code Structure:
+------------------------------------
+	# scanner.JFlex
+
+	Code section
+	%%
+	Declarations section
+	%%
+	Rules section
+------------------------------------
+	1. The first section "code section" contains the user code and can be empty
+		a. All the code lines present in this section are copied without any modification in the generated scanner.
+		. Ex: 	"import java.io.*;"
+
+
+	2. The second section "declarations section" contains options and declarations.
+		a. To simplify the use of complex or repetitive regular expressions, it is possible to define identifiers for sub-expressions. The sub-expression can then be used in the rules section, writing its name between braces:
+		. Ex: 	integer = [+-]?[1-9][0-9]* 	// inside declarations section
+				{integer} 						//inside rules section
+					{System.out.print("integer found\n");
+
+		b. "%class className" : it will produce "className.java" file
+			! if this code is not used, the java filename will be "Yylex.java"
+		
+		c. "%standalone" : it will produce "className.java" file as a standalone class that can be used directly with appropriate "input file" as an argument. it has "main(String[] args)" class that can accept input file directly from argument. The main method accepts as input the list of file to be scanned.
+
+			- with "%standalone" option, the default JFlex behaviour is to print unmatched characters to stdout. Use "." (dot) regular expression to manage them.
+				-> {other regex...}
+					. 		{;} // it matches everything not defined and will do nothing
+
+		. For declaring public variables, they must be put between "%{ ... %}".
+			-> %{
+					public int line_num;
+					public char name;
+				%}
+
+		. Java code can be included in the declarations section by writing it between "%init{ ... %init}" and "%eof{ …%eof}"
+			
+			-> %init{
+					System.out.println("it will be printed in the beginning");
+				%init}
+
+			-> %eof{
+					System.out.println("it will be printed at the end");
+				%eof}
+
+	3. The third section "rules section" contains the lexical rules in the form of regular_expression action pairs.
+		. In JFlex, each regular expression is associated to an action, which is executed when the input matches the regular expression.
+		. Actions are constituted by snippets of Java code, written between braces.
+		. The simplest action consists in ignoring the matched string and is expressed by an empty action "{;}"
+		. Ex: 	\n | \r | \r\n
+					{System.out.println("newline found"); }
+
+
+	
+	. Tips:
+		# for space:
+			" " or \s
+		
+		# for comment:
+			like Java syntax, "/* .... */" or "//"
+		
+
+
+Scanner methods and fields accessible in actions:
+-------------------------------------------------------------
+	. String yytext()		Returns the matched string (that`s saved in internal buffer)
+	. int yylength()			Returns the number of matched characters
+	. int yycharat(int pos)	Returns the character at position pos, starts from 0
+	
+	. int yyline
+	. int yycolumn 			Contains the current line and column of input file, respectively. Those variables have a meaningful value only if "%line" and "%column" directives are declared
+
+	. int yychar 			Contains the current character count in the input (starting with 0, only active with the "%char" directive)
+
+
+Compiling steps:
+---------------------
+	. Linux:
+		1. terminal / go to the ".JFlex" file path
+		2. JFlex flexFile.JFlex
+		3. javac generatedClass.java
+		4. java generatedClass <input_file_1> … <input_file_n>
+	
+		or -> 2 ; 3 ; 4
+
+	
+	. Windows:
+		1. cmd / go to the ".JFlex" file path
+		2. -> JFlex flexFile.JFlex
+		3. -> javac generatedClass.java
+		4. -> java -cp . generatedClass <input_file_1> … <input_file_n>
+
+		or -> 2 & 3 & 4
+		or -> JFlex flexFile.JFlex & javac *.java & java  -cp . generatedClass  <input_file_1> … <input_file_n>
+
+
+
+
+Rules:
+------------------------------
+	1. Ambiguous Source
+		a. Longest Match:
+			the initial part of character sequences matched by one regular expression is also matched by another regular expression
+
+		b. First Match:
+			the same character sequence is matched by two distinct regular expressions
+
+		-> To conclude, it is better to define the shortest rule first and the longer as the second rule, to prevent unwanted matches.
+				"ab"		{do...;}
+				"abc" 		{do...;}
+
+	2. Context
+		rules number <20> & <21>
+
+
+	3. Sensitivity to the right context
+		The binary operator "/" separates a regular expression from its right context.
+		-> "ab/cd" 	:: "ab", but if and only if is followed by the string "cd"
+		-> "ab$" 		:: is equivalent to "ab / ( \n | \r | \r\n )"
+
+
+
+	4. Start conditions ! INCLUSIVE STATES !
+		Rule starting with <state> are active only when the scanner is in the state <state>. It behaves like "if condition" and when a special state occurs, special actions are done.
+		
+		. Possible states must be declared in the declarations section using the "%state state_name"
+		. The default state is "YYINITIAL"
+		. The scanner enters a state when "yybegin(state);" is executed. When a state is activated, the state rules are added (inclusive or) to the other scanner base rules.
+		. A state is active until another state is activated. To return to initial condition, one must activate the initial state by means of "yybegin(YYINITIAL);"
+		. A rule can be preceded by one or more state names, separated by a comma, to indicate that it is active in each of the states.
+
+
+		. Ex: if "//" is found, the state is changed to <comment> and by "{yybegin(comment);}" it activates the <comment> state. the state is kept, until "\n|\r|\r\n" is found, which brings the state to the "initial state" by "{yybegin(YYINITIAL);}"
+		
+			[JFlex]
+				%%
+				// although we will go into "comment" state, but also other expressions
+				// will function too. so be careful
+				%state comment
+				%%
+				// if encounters "//" it will start "comment" state
+				"//" 									{yybegin(comment);}
+
+				// if it is inside "comment" state, and if it finds the expression
+				// it will run the code
+				<comment>\$[a-zA-Z]+[+-] 			{print(yytext());}
+
+				// if any new line found, come back to "initial" state
+				\n|\r|\r\n 								{yybegin(YYINITIAL);}
+				
+				/* other rules.... */
+			[end]
+
+	
+
+	5. Start conditions ! EXCLUSIVE STATES !
+		A set of rules can be grouped within an exclusive state as well. The "%xstate" keyword defines an exclusive state.
+		
+		. When the scanner enters an exclusive state:
+			a. default rules are disabled,
+			b. only the rules explicitly defined for the state are active.
+			c. In this way, "mini-scanner" that deal with special sections of the input stream, such as comments or strings, can be defined.
+
+		. Ex: In the "initial state" is count the number of lines by "nl" and when encounters "/*" the <comment> state is activated and ALL Other RULES are ignored and ONLY rules that have <comment> in the beginning, will function. Inside <comment> state when encounters "*"+"/", it jumps out to the "initial state".
+
+		[JFlex]
+			%%
+			%standalone
+			
+			// it means only and only the rules defined in front of <comment>XXX , will apply
+			%xstate comment
+			
+			// my Java codes to count lines
+			%{
+				public int line_num = 1; 
+				public int line_num_comment = 1;
+			%}
+
+			nl = \n | \r | \r\n
+
+			%%
+			{nl} 							{ ++line_num; }
+
+			// when encounters "/*", "comment" is started
+			"/*" 							{ yybegin(comment); }
+			<comment>[^*\r\n]* 		{;}
+			<comment>"*"+[^\/\r\n]* 	{;}
+			<comment>{nl} 				{ ++line_num_comment; }
+
+			// if "*/" is reached, "comment" ends
+			<comment>"*"+"/" 			{ yybegin(YYINITIAL); }
+
+			/* other rules.... */
+		[end]
+
+
+	6. End of file rule
+		"<<EOF>>" :: actions to be performed when the end of file is reached
+		-> <<EOF>>  	{...; return YYEOF;}
+
+		. This rule can be useful, coupled with start conditions, to detect unbalanced parentheses (or braces, brackets, quotation marks, ….)
+
+
+	7. Caseless
+		make the compiler, not sensitive to the alphabets of the source file
+
+		%caseless
+
+
+
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+
+
+
+CUP
+-----------------
+2017/05/22
+-----------------
+
+
+Introduction:
+----------------
+	Given a non-ambiguous grammar and a sequence of input symbols, a parser is a program that verifies whether the sequence can be generated by means of a derivation from the grammar
+
+	# CUP is a "bottom-up Parser"
+
+	# For Commenting:
+		like Java syntax, "/* .... */" or "//"
+
+	How it works?
+		"Input Data" is read by "JFlex Scanner" and the expressions are found. "Found expressions" are sent to the "CUP Parser" which holds the "Tokens" that match them. "CUP Parser" has also the "Grammar Rules" that can checks if with the "Recieved Tokens" can generate a valid "Grammar" or not.
+
+														 			Grammar(G): Rules....
+												TOKEN 				
+		input 	--> 		Scanner 	-->		TOKEN 	--> 		Parser
+							(JFlex)				TOKEN 				(CUP)
+
+
+
+
+Sections:
+-----------------
+	. Setup: 
+		1. contains all the directives needed for the parser
+		2. libraries
+				-> import java_cup.runtime.*;
+		3. User codes
+				Redefinition of Cup internal methods
+				Integration with scanner other than JFlex
+
+	. Start symbol, Terminals and Non-Terminals:
+		#Start symbol
+			"start with <non_terminal_name>;"
+			It is the root of the parse tree
+			. Only one occurrence of this keyword is allowed
+
+		#Terminals [passed by JFlex]
+			"terminal <terminal_1>,…,<terminal_n>;"
+			<terminal>: name containing letters, "_", "." and digits (the first character must be a letter)
+			. Terminals are recognized and passed by JFlex
+
+		#Non-Terminals [passed by JFlex]
+			"non terminal <non_terminal_1>,…,<non_terminal_n>;"
+			<non_terminal>: name containing letters, "_", "." and digits (the first character must be a letter).
+			. Non-Terminals are recognized and passed by JFlex
+	
+
+	. Precedences:
+		The start symbol is written
+			--> start with <start_non_terminal_symbol>;
+	
+
+	. Rules:
+		. The Rules section contains one or more productions in the form:
+			<non_terminal> ::= Right_Hand_Side ;
+			where "Right_Hand_Side" is a sequence of 0 or more symbols.
+
+		. To each production, an action can be associated, which must be enclosed between "{:" and ":}". If more than one production exists for a given Non-Terminal, they must be grouped and separated by "|"
+
+		! the action (between {: :}) is executed before the reduce takes place
+
+			--> D ::= T VL S
+						{: System.out.println("Declaration found"); :}
+					;
+
+			--> func ::= type ID RO VL RC S
+								{: System.out.println("Function prototype"); :}
+						
+						| type ID RO VL RC BO stmt_list BC
+								{: System.out.println("Function"); :}
+					;
+
+
+	. Example:
+		[cup]
+			// Terminal and Non_Terminal
+			// I prefer to write terminals in lower case			
+			terminal t, v, s, cm, p, id, so, sc, num;				// D 	--> t VL s
+			non terminal D, VL, V, Va;							// VL 	--> V | VL cm V
+																	// V 	--> p V | Va
+																	// Va 	--> Va so num sc | id
+			// Start
+			start with D;
+
+			// Rules
+			D 	::= t VL s;
+			VL 	::= V | VL cm V;
+			V 	::= p V | Va;
+			Va 	::= Va so num sc | id;
+		[end]
+
+
+
+	. Compiling:
+		Three files are needed:
+			1. Main.java --> for reading and integrating parser
+				// we won`t touch it, use it as is.
+
+				[java]
+					import java.io.*;
+
+					public class Main {
+						static public void main(String[] argv) {
+							try {
+								/* Instantiate the scanner and open input file argv[0] */
+								Yylex l = new Yylex(new FileReader(argv[0]));
+								/* Instantiate the parser */
+								parser p = new parser(l);
+								/* Start the parser */
+								Object result = p.parse();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				[end]
+
+
+			2. scanner.JFlex --> for defining the regular expressions
+				! "standalone" is removed and must use "%cup"
+				
+				[JFlex]
+					import java_cup.runtime.*; 		// load CUP libraries
+					…
+					%%
+					%cup 			// instead of "%standalone"
+					…
+					%%
+					[a-z]+ 	{
+								System.out.println("a string found");
+								return new Symbol(sym.el); 		// this constructor is explained later
+							}
+
+					"," 		{return new Symbol(sym.cm); }
+				[end]
+
+
+			3. parser.cup --> for defining the grammar
+				[cup]
+					import java_cup.runtime.*;
+
+					terminal el, cm;
+					non terminal List, EList;
+					start with EList;
+
+					EList ::= List 
+								{: System.out.println("List found"); :} 
+									| /*empty*/ {: System.out.println("Empty list"); :}; // /*empty*/ = ε
+
+					List ::= List cm el;
+					
+					List ::= el;
+				[end]
+
+
+	. How to compile:
+		0. put all files (Main.java, parser.cup, scanner.JFlex) into "CUP" root folder 		// C:\CUP\<here>
+		0. put all files (Main.java, parser.cup, scanner.JFlex) into "java_cup_v10k_drawTree" root folder 	// C:\java_cup_v10k_drawTree\<here>
+
+		1. "JFlex scanner.JFlex"
+		
+		2. "java java_cup/Main parser.cup"	<-- Windows
+		2. "java java_cup.Main parser.cup"	<-- Linux
+			. In the case of shift/reduce or reduce/reduce conflicts:
+				java java_cup.Main –expect <number_of_conflicts> parser.cup
+				
+			. The parse tree is drawn (useful for debugging)
+				java java_cup.MainDrawTree parser.cup
+		
+		3. "javac Yylex.java sym.java parser.java Main.java" 
+			or "javac *.java" for the compilation of all the files of the project
+		
+		4. "java Main <input_file>"		// To execute the program using <input_file> a input
+
+		// Windows
+		--> or "JFlex scanner.JFlex & java java_cup/Main parser.cup & javac *.java & java Main input.txt" 	
+
+		// Linux
+		--> or "JFlex scanner.JFlex ; java java_cup/Main parser.cup ; javac *.java ; java Main input.txt" 
+
+
+
+		Debugging:
+			1. check the important syntaxes
+				-> %%, %cup, {x}, ::=, Terminal
+			
+			2. are all the Terminals/Non-Terminals defined in the cup file?
+			3. all commands inside "{ }" are finished with ";"?  // {...;}
+			4. all lines have ";" at the end? // {...;};
+
+
+
+Ambiguous grammars in CUP:
+-------------------------------------
+	In ambiguous grammars, there are two or more actions for the parser to choose which leads to conflicts, "Shift/Reduce" or "Reduce/Reduce" conflicts.
+
+	Two ways to solve:
+		1: modify the ambiguous grammar
+		2: tell the parser how to handle this situation
+
+
+		Shift/Reduce Error:
+			*** Shift/Reduce conflict found in state #number
+					between X ::= Y E T X (*)
+					and X ::= Y Z T X (*) S X
+					under symbol S
+			
+			-> Resolved in favor of shifting.
+
+
+		Reduce/Reduce Error:
+			*** Reduce/Reduce conflict found in state #number
+					between X ::= f (*)
+					and X ::= g f (*)
+					under symbols: {EOF}
+			
+			-> Resolved in favor of the second production.
+
+
+
+	. Lists:
+		1. List with at least one element E, separated with commas C:	
+			. List ::= List E | E ; //without C
+			. List ::= List C E | E ;
+
+		2. List of elements, possibly empty (two examples):
+			. ListE ::= ε | List ; // ε = /*empty*/
+			  List ::= List E | E ;
+
+			. List ::= List E | ε ;
+
+		3. List of elements, possibly empty (WRONG example):
+			. List ::= List E | E | ε ;
+
+		4. List of at least 3 elements (1,3,5,7):
+			. List ::= List E | E E E ;
+
+		5. List of at least 3 elements in an odd number (0,2,4,6):
+			. List ::= List E E | E E E;
+
+
+
+	. Convert:
+		Ambiguous Grammars can be converted to Non-Ambiguous Grammars by introducing precedences for the rules, defining their priority and Left/Right associativity.
+
+		"precedence left" 			-> left-associative rule
+		"precedence right" 		-> right-associative rule
+		"precedence nonassoc" 	-> nonassociative rule
+
+		#RULES:
+			1. The priority of the Precedences decreases as they are defined, or, increase of line-of-code = higher priority
+
+			2. To each production that contains at least one terminal defined as operator, Cup associates the precedence and associativity of the rightmost operator.
+
+			3. If the rule is followed by the keyword "%prec", the precedence and associativity are those of the specified operator.
+
+			4. In the case of a shift-reduce conflict, the action corresponding to the highest precedence production is executed.
+
+			5. If the precedence is the same, associativity is used: leftassociativity results in a reduce action, right-associativity in a shift action.
+
+
+			[cup]
+				terminal uminus;
+				
+				precedence left ‘+’, ‘-’; 	/* Lowest priority */
+				precedence left ‘*’, ‘/’;
+				precedence left uminus; 	/* Highest priority */
+				start with E;
+				
+				E ::= 	E ‘+’ E
+						| E ‘-’ E
+						| E ‘*’ E
+						| E ‘/’ E
+						| ‘-’ E %prec uminus
+						| ‘(’ E ‘)’
+						| INTEGER
+						;
+			[end]
+
+
+
+
+User Code:
+	. Personalizing the parser behavior
+	. Adding code directly in the class that implements the parser
+	. Using a scanner generator different from the default one (JFlex)
+
+	#init with {: … :}
+		. This code is executed before calling any scanner method, hence before any terminal symbol is passed to the parser
+		. It is used to inizialize variables or to initialize the scanner in the case JFlex is not used.
+
+		[cup]
+			init with {:
+  					table = new HashMap<String, HashMap<String, Integer>>();
+			:};
+		[end]
+
+
+	#scan with {: … :}
+		. Indicates to the parser which procedure to use to request the next 			terminal to the scanner
+		. It must return an object of the class java_cup.runtime.Symbol
+		. It is used for non-default scanner generators (different than JFlex)
+		
+		[cup]
+			scan with {: return scanner.next_token(); :}
+		[end]
+
+
+	When CUP generates the java file that implements the parser, two classes are defined:
+		. public class "parser" extends java_cup.runtime.lr_parser
+		- parser is the java class that implements the parser and inherits different methods from the java_cup.runtime.lr_parser class
+		
+		. class "CUP$parser$actions"
+		- "CUP$parser$actions" is the class where declared grammar rules are translated into a java program. Here, also semantic actions (i.e., the java code related to each rule) are reported
+
+		. The "java_cup.runtime.lr_parser" class is implemented in the file java_cup/runtime/lr_parser.java, in the CUP installation directory
+
+	# parser code {: … :}
+		. The code is included in the parser class
+		. It is used to include scanning methods within the parser but usually to override parser methods (e.g. to override methods for error handling)
+
+	# action code {: … :}
+		. The code included in this directive is copied as is in the CUP$parser$actions class
+		. The code is reachable only in the semantic actions associated with grammar rules
+		. It is used to define procedures and variable to be used in the actions associated to the grammar (e.g., symbol table)
+
+	Symbol constructors:
+		public Symbol( int sym_id)
+		public Symbol( int sym_id, int left, int right)
+		public Symbol( int sym_id, Object o)
+		public Symbol( int sym_id, int left, int right, Object o)
+
+
+	Example:
+		[JFlex]
+			import java_cup.runtime.*;
+			…
+			%%
+			%cup
+			%line
+			%column
+			%{
+				private Symbol symbol(int type){
+					return new Symbol(type, yyline, yycolumn);
+				}
+
+				private Symbol symbol(int type, Object value){	 //Semantic analysis
+					return new Symbol(type, yyline, yycolumn,value);
+				}
+			%}
+			…
+			%%
+			[a-z] { return symbol(sym.EL); }
+			"," { return symbol(sym.VIRGOLA); }
+		[end]
+
+
+		[cup]
+			import java_cup.runtime.*;
+			parser code {:
+				public void report_error(String message, Object info) {
+					StringBuffer m = new StringBuffer(message);
+					if (info instanceof Symbol) {
+						if (((Symbol)info).left != -1 && ((Symbol)info).right != -1) {
+							int line = (((Symbol)info).left)+1;
+							int column = (((Symbol)info).right)+1;
+							m.append(" (linea "+line+", colonna "+column+")");
+						}
+					}
+					System.err.println(m);
+				}
+			:}
+			...
+		[end]
+
+
+
+
+Syntax Error Handling:
+	Generally speaking, when a parser finds an error it should not immediately terminate the execution. A compiler usually tries to recover from the error in order to analyze the rest of the input and signal the highest possible number of errors
+
+	As default, a CUP-generated parser when an error is detected:
+		. Signals by means of the method public void syntax_error(Symbol cur_token) defined in the java_cup.runtime.lr_parser class a syntax error, writing “Syntax error” in stderr.
+		
+		. If the error is not managed by the parser through the predefined error symbol, the parser call the public void unrecovered_syntax_error(Symbol cur_token) method, also defined in java_cup.runtime.lr_parser. This function, after writing “Couldn't repair and continue parse” in stderr (to notify the user of an unrecoverable syntax error), stops the execution of the parser.
+
+	Analyzing the two functions:
+		. public void syntax_error(Symbol cur_token)
+			Calls the function report_error with the following parameters report_error("Syntax error", cur_token), Where, when an error occurs, cur_token is the currently looahead symbol
+		
+		. public void unrecovered_syntax_error(Symbol cur_token)
+			Calls the function report_fatal_error, with the following parameters report_fatal_error("Couldn't repair and continue parse", cur_token);
+			The report_fatal_error function calls with the same parameters report_error and it launches an exception that causes the end of the parser
+
+		. A suitable redefinition, in parser code {: … :}, of the listed functions, allow to customize errors management
+
+	"error":
+		The "error" predefined symbol signals an error condition. It can be used within the grammar in order to enable the parser to continue execution when an error is encountered.
+		
+		[cup]
+			assignment ::= ID EQ E S
+							| ID EQ error S
+							;
+		[end]
+
+
+		#How it works?
+			. When an error occurs, the parser will start emptying the stack until a state is found in which the ‘error’ symbol is allowed
+				. In the previous example, incorrect E (i.e. symbol sequences that cannot be reduced as E) are removed from the stack, until the terminal EQ is found on the top of the stack.
+			. The error token is shifted in the stack
+			. If the next token is acceptable, the parser resumes syntax analysis.
+			. Otherwise the parser will continue to read and discard tokens, until an acceptable one is found
+			. In the prevoius example, the parser will read and discard all tokens until S is found.
+
+		#Some Rules:
+			A simple strategy for error handling is skipping the current statement:
+				-> stmt ::= error ‘;’
+
+			Sometimes it can be useful to find a closing symbol corresponding to an opening symbol:
+				-> expr ::= "(" expr ")"
+							| "(" error ")"
+
+			! to limit the generation of spurious error messages, after an error occurs, error signaling is suspended until at least three consecutive tokens are shifted.
+
+
+
+
+
+Attributes of Symbols:
+-----------------------------
+	A set of attributes can be associated to each symbol; attributes can be:
+		. Synthesized: 
+			calculated from the values of the attributes of the node’s children in the parse tree.
+
+		. Inherited: 
+			calculated from the values of the parents / siblings in the parse tree.
+
+	A set of semantic rules, specifying how attributes are calculated, is associated to each production.The scanner passes semantic values to the parser which, while recognizing the grammar, updates the nodes of the parse tree.
+
+	A grammar whose attributes are all synthesized is denoted as an S-attribute grammar.
+
+	[cup]
+		// In this case, it is possible to calculate the values of all attributes using a bottom-up strategy, from the leaves to the root of the parse tree.
+
+		E1 → E2 ‘+’ T 				E1.value ::= E2.value + T.value
+		E1 → T 					E1.value ::= T.value
+		T → number 				T.value ::= number.value
+	[end]
+
+
+	# Symbol Class:
+		In Cup, each symbol in the stack is an object of class Symbol ( cup/java_cup/runtime/Symbol.java ). It contains the following information:
+			. A number uniquely identifying the symbol
+				- public int sym;
+			. The state in which the parse is
+				- public int parse_state;
+			. Two integers that are used to pass "line" & "column" number from the scanner to the parser 
+				- public int left, right;
+			. An object of class Object to handle semantics
+				- public Object value;
+
+
+	#Passing semantic values to the parser
+		[JFlex]
+			//....
+			%%
+			%{
+				private Symbol symbol(int type, Object value){
+					return new Symbol(type, yyline,yycolumn,value);
+				}
+			%}
+
+			%%
+			[a-zA-Z][a-zA-Z0-9_]* { return symbol(sym.ID, new String(yytext())); }
+
+			// with more details for debugging, with line and column
+			[a-zA-Z][a-zA-Z0-9_]* { return new Symbol(sym.ID, yyline, yycolumn, new String(yytext())); }
+			// %line and %column are not needed to be declared, they are already declared inside "private Symbol symbol(...)". If it was not declared, they have to be declared
+		[end]
+
+
+	# Cup & Semantic: 
+		1. specifying nodes types: Cup must know the type of the semantic value of each symbol
+			. It uses the following definition of terminals and Non-Terminals:
+			. terminal <Object> <list_of_terminals> ;
+			. non terminal <Object> <list_of_not_terminals> ;
+			. <Object> is the class of the object associated to a given symbol
+
+			Example:
+				terminal String ID;
+					// An object of class String will be associated to ID.
+				terminal Integer NUM;
+				
+				non terminal MyObject var;		->	class MyObject {
+															public String var_name;
+															public String var_type;
+														}
+
+		2. using semantic values:
+			a. Given a set of productions:
+				E ::= 	E PLUS T
+						| E MINUS T ;
+
+			b. One can refer to the semantic value of each symbol by adding labels to the symbols of interest:
+				. A label is constituted by the ":" character followed by a name
+
+				E ::= 	E:n1 PLUS T:n2
+						| E:n1 MINUS T:n2 ;
+
+			c. Within each production, the labels can be used normally as objects of the class specified in the definition of terminals and Non-Terminals:
+				E ::= 	E:n1 PLUS T:n2 		{: System.out.print(n1 + “ + “ + n2); :}
+						| E:n1 MINUS T:n2 	{: System.out.print(n1 + “ - “ + n2); :}
+
+
+		3. Actions and RESULT:
+			An action can be associated to each production, "{: /* Java Code*/ :}" and is executed every time the corresponding production is reduced
+			
+			The action updates the semantic value of each symbol
+			
+			For each production, the RESULT object, of class Object, is defined
+
+			"RESULT" represents the result of the semanatic rules contained in the action, and is therefore associated to the symbol in the left hand side of the production
+
+			#Calculating synthesized attributes with RESULT (1)
+				Given the algebraic expressions grammar, the following rule assigns to the symbol "E" the sum or the subtraction of the values of the addends/subtrahends:
+
+				[cup]
+					non terminal Integer E;
+					
+					E ::= E:n1 PLUS T:n2
+							{: RESULT = new Integer(n1.intValue() + n2.intValue()); :}
+						| E:n1 MINUS T:n2
+							{: RESULT = new Integer(n1.intValue() - n2.intValue()); :}
+						;
+				[end]
+
+
+				! RESULT must be assigned an object of class Integer: new Integer()
+				! Mathematical operators work on numbers, not objects: n1.intValue()
+
+
+			#Calculating synthesized attributes with RESULT (2)
+				It is possible to propagate more than one semantic value through RESULT, in the following way:
+
+				[cup]
+					termianl TO, TC;
+					termianl String identifier;
+					termianl Integer Args;
+					non termianl Object[ ] Func;
+					non termianl goal;
+
+					start with goal;
+
+					goal ::= Func:a {:
+								System.out.println("Function name: " + a[0]
+									+ "Number of parameters: " + a[1]);
+							:};
+
+					Func ::= identifier:a TO Args:b TC{:
+								RESULT = new Object[2];
+								RESULT = new String(a);
+								RESULT = new Integer(b);
+							:};
+				[end]
+
+
+
+			#Calculating synthesized attributes with RESULT (3)
+				Alternatively, one can write a class that contains all the required information:
+
+				[cup]
+					action code {:
+						class MyFunc {
+							public String id;
+							public Integer args;
+							MyFunc(String id, Integer args) {
+								this.id = new String(id);
+								this.args = new Integer(args);
+							}
+						} 
+					:}
+
+					non terminal MyFunc Func;
+					
+					goal ::= Func:a {:
+								System.out.println( "Functison name: " + a.id + "Number of parameters:" + a.args );
+							:} ;
+
+					Func ::= identifier:a TO Args:b TC 
+							{: RESULT = new MyFunc( a, b ); :} ;
+				[end]
+
+
+Debugging:
+-----------------------
+	A series of option are available in Cup to visualize the parser’s internal structures:
+		1. "-dump_grammar" : Prints the list of terminals, Non-Terminals and 	productions
+		2. "-dump_states" : Prints the state graph
+		3. "-dump_table" : Prints the ACTION TABLE and the REDUCE TABLE
+		4. "-dump" : Prints all information
+		
+		5. The parser can be executed in debug mode (all the actions performed to analyze the input sequence are printed). "Main.java" is needed to be changed by adding "debgu_parse()":
+
+			[Main.java]
+				Yylex l = new Yylex(new FileReader(file));
+				parser p = new parser(l);
+				Object result = p.debug_parse();		<----
+			[end]
+
+
+	# full details in slides
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Common Errors & Debugging:
+
+	#Error1:
+	Exception in thread "main" java.lang.Error: Error: could not match input
+	        at Yylex.zzScanError(Yylex.java:435)
+	        at Yylex.next_token(Yylex.java:648)
+	        at java_cup.runtime.lr_parser.scan(lr_parser.java:335)
+	        at java_cup.runtime.lr_parser.debug_parse(lr_parser.java:755)
+	        at Main.main(Main.java:11)
+
+	#Solution:
+		-> There is something unmached in input text file
+		-> use "MainDrawTree"
+
+
+
+
+	#Error2:
+		Main.java:8: error: cannot find symbol
+                        Yylex l = new Yylex(new FileReader(argv[0]));
+                        ^
+		symbol:   class Yylex
+		location: class Main
+
+	#Solution:
+		-> check if the "scanner.JFlex" produces "Yylex" or not?
+		-> ther must not be "%class xxxxxxx"
+
+
+
+
+	#Error3:
+		parser.java:251: error: cannot find symbol
+		Tree= new DisegnaAlbero();   }public static DisegnaAlbero Tree;
+		                                                                ^
+		symbol:   class DisegnaAlbero
+		location: class parser
+
+	#Solution:
+
+
+
+
+	#Error4:
+		terminal / non terminal "XXX" is not declared
+
+	#Solution:
+		check the syntaxes "terminal" and "non terminal"
+
+
+	#Error5:
+		"XXXX" is already declared
+
+	#Solution:
+		check terminals and non terminals
+
+
+
+
+	#Error6:
+		parser.java:422: error: array required, but Object found
+                                RESULT[0] = a;
+
+     #Solution:
+     		define appropriate type for the "non terminals"
+     			-> non terminal HashMap attrs;
+			-> non terminal Object[ ] vParam;
+
+
+	#Error7:
+		the error shows which line / column
+
+	#Solution:
+		95% it is related to the parser grammar

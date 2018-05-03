@@ -2039,7 +2039,9 @@ Linux SHELL:
 
 ---------------------------------------------------
 Notes:
+FAQ: "http://www.c-faq.com/"
 ---------------------------------------------------
+
 What does void mean?
 	A pointer to void is a "generic" pointer type. A void * can be converted to any other pointer type without an explicit cast. You cannot dereference a void * or do pointer arithmetic with it; you must convert it to a pointer to an complete data type first.
 
@@ -2048,5 +2050,21 @@ What does void mean?
 
 
 Should I use "char ** argv" or "char * argv[]" in C?
+	1. Both are exactly equivalent ONLY as parameter declaration.
+	2. Arrays are not pointers. 
 
 	more: "https://stackoverflow.com/questions/779910/should-i-use-char-argv-or-char-argv-in-c"
+
+
+
+What's the difference between "struct x1 { ... };" and "typedef struct { ... } x2;"?
+	The first form declares a structure tag; the second declares a typedef. The main difference is that the second declaration is of a slightly more abstract type--its users don't necessarily know that it is a structure, and the keyword struct is not used when declaring instances of it:	
+		"x2 b;"
+
+	Structures declared with tags, on the other hand, must be defined with the
+		"struct x1 a;"
+
+	more: "http://c-faq.com/struct/typedef.html"
+
+
+

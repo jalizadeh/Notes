@@ -1,0 +1,333 @@
+Network Programming with Unix Sockets
+-------------------------------------
+$config
+	tab-size = 2
+-------------------------------------
+
+
+Network Programming:
+-----------------------------
+	. Programming the implementation of protocols using services provided by lower layer protocols
+	. Interaction with lower layer protocols occurs via some particular API
+
+	. protocol standards
+		-- specify protocols and their offered service
+		-- do not specify interfaces (how the service is accessed)
+
+	. for PORTABILITY, some APIs for accessing protocol services have been standardized (use every where, function the same | NDIS, Socket)
+
+
+Classification of APIs:
+---------------------------
+	. Procedural API
+		-- set of procedures that implement the various operations
+		-- interaction is typically "synchronous"
+
+	. Message/event-based API
+		-- set of messages that are exchanged by service provider and service requestor according to a well defined protocol
+		-- interaction is typically "asynchronous"
+
+
+
+The Socket API:
+--------------------
+	. standard API, accessing network services provided by layers 2, 3, 4 in the Internet
+	. TCP / UDP
+
+
+Sockets:
+	IP Address + Port Number
+---------------------------------------
+	. abstraction of an inter-process communication channel (endpoint, SAP)
+	. Sockets "live" in domains, each one characterized by its "PROTOCOL FAMILY" and "ADDRESS FAMILY"
+	. Communication between two different domains is impossible
+
+		Domain 				Protocol Family 			Address Family
+		--------------------------------------------------------------------------------
+		ARPA Internet 			PF_INET 					AF_INET
+		Internet with IPv6 	PF_INET6 					AF_INET6
+		ISO/OSI 				PF_ISO 					AF_ISO
+		Unix pipes 				PF_UNIX 					AF_UNIX
+
+
+Socket Features / TYPE :
+-------------------------------
+	TYPE of a socket specifies the "service type" accessible through the socket
+
+	-- SOCK_STREAM:
+		. continuous bidirectional byte stream (without delimiters)
+		. transmitted reliably (same byte order, no duplications)
+		. connection-oriented service (offered by layer 4, e.g. <TCP>)
+
+	-- SOCK_DGRAM:
+		. bidirectional message (datagram)
+		. delivery without reliability guarantee (messages can be delivered out of order and can be duplicated)
+		. connectionless service (offered by layer 4, e.g. <UDP> )
+
+	-- SOCK_RAW:
+		. direct access to the services provided by layer 2, 3 protocols
+
+
+
+Socket Features / PROTOCOL:
+--------------------------------------
+	. In each "domain", and for each "socket type", a protocol to be used with the socket can be selected. For example, page 12...
+
+
+
+Socket Features / OPTIONS:
+-----------------------------------
+	. Options specify various other socket features
+
+	SO_RCVBUF 		(size of receiver buffer)
+	SO_SNDBUF 		(size of transmitter buffer)
+	SO_LINGER 		(if enabled, delays connection closing when undelivered data are available in the socket buffer)
+
+	SO_KEEPALIVE 	(if enabled activates transmission of periodic keep alive messages: if the response to a keepalive message is not received, the connection is closed)
+
+
+
+
+
+
+
+
+
+Distributed Computing System:
+	. a computing system made of autonomous computers interconnected by a network
+	. Computation is distributed
+	. DCS may include any kind of computer (size, feature, ...)
+
+
+DCS - Software Architecture:
+	. is based on the application-oriented OSI layers (5,6,7)
+	. made of a set of processes
+		1. physically executed on possibly different machines (hosts)
+		2. interact with each other according to some < Interaction Model = Architecture >
+
+
+
+Client / Server Interaction Model:
+	. the most used model
+	. Each interaction occurs between two processes: Client / Server
+	. Each interaction is based on a "msg exchange": 
+		Client 	-> sends a request 
+		Server 	-> sends back a response
+
+	! A single process can be CLIENT in some interactions & SERVER in other interactions !
+
+
+Client / Server 		vs 		P2P:
+	pages 6,7,8
+	features & benefits of each one
+
+
+Why is Distributed Software Critical & Difficult to Develop?:
+	. Distributed software is always concurrent (Multi processes) & hard to Develop
+		-- synchronization, avoid deadlocks, ...
+
+		. Distributed software runs on heterogeneous platforms often in different locations
+		-- HW, OS, locales
+
+		. by its nature more exposed to security attacks
+		-- eavesdropping, impersonation/spoofing, man-in-the-middle, reply, DOS, ...
+	
+	. comm. between software components running on different hosts impacts on performance & may fail.
+		-- this must be considered by the programmer
+		
+		. Processing time is normally orders of magnitude less than comm. time
+		-- Minimum time for typical C/S Interactions (RTT) (page 12)
+
+	. Partial crash (of single processes) or network connection failures are possible
+
+
+Middleware:
+	Most of the criticalities of distributed software are often solved by a software layer called middleware, which st&s between "applications" & "OS"
+	. Business-unaware services for coordination & comm. between remote processes
+	. hides comm. through the network, process & host heterogeneity, security issues, ...
+
+	~~ 	web browser, database driver
+	!~!		airline reservation system (business aware) 
+
+
+
+
+
+
+
+
+
+.
+.
+.
+.
+
+--------------------------------------------------
+Data Transfer on SOCK_DGRAM sockets:
+--------------------------------------------------
+Since the service is connectionless
+	no preliminary operation needed ("bind" can be used if a well known address has to be assigned to the socket)
+	only whole datagrams can be sent/received (no partial buffering in the socket)
+	for each send, the destination must be specified (and can change)
+
+! When a SOCK_DGRAM is no longer needed it should be closed (just to release resources)
+
+
+Sending a Datagram:
+`````````````````
+	[c]
+		ssize_t sendto (int socket,
+						const void *data,
+						size_t datalen,
+						int flags,
+						const struct sockaddr *to,
+						socklen_t addrlen);
+
+		//– socket 		socket to be used for sending datagram
+		//– data		buffer where the datagram to be sent is stored
+		//– datalen 	length of datagram to be sent
+		//– flags		options
+		//– to 			pointer to destination address
+		//– addrlen		length of destination address
+	[c]
+
+
+
+Receiving a Datagram:
+``````````````````
+	[c]
+		int recvfrom (	int socket,
+						void *buffer,
+						size_t buflen,
+						int flags,
+						struct sockaddr *from,
+						size_t *addrlen);
+
+		//– socket 		socket to be used for receiving datagram
+		//– buffer 		buffer where received datagram has to be stored
+		//– buflen 		buffer length
+		//– flags 		options
+		//– from 		pointer to sender address
+		//– addrlen 	pointer to length of sender address
+	[c]
+
+
+
+Other functions for SOCK_DGRAM Sockets:
+```````````````````````````````````
+	"bind" can be used to assign a well-defined local address to the socket (necessary for a server)
+	
+	"connect" can be used to permanently associate a remote address to the socket (communication will be possible only with that end point)
+
+	"send", "recv", "read", "write" can be used if a connect has been done
+		destination address is implicitly the remote end point associated with the socket by the connect
+		when used with SOCK_DGRAM sockets these functions read or write whole datagrams
+
+
+	SERVER 											CLIENT
+	--------------------------------------------------------------------------------------------------------------
+	recvfrom(sr,buf,len,&caddr,&caddrlen) 			
+														connect(sl,&addr,sizeof(addr))
+														send(sl,buf,len)
+														sendto(sl,buf,len,0, &addr,sizeof(addr))
+														recv(sl,buf,len)
+														recvfrom(sl,buf,len,0,&addr, &addrlen)
+	sendto(sr,buf,len,0,&caddr,sizeof(caddr))
+
+
+
+
+
+Exmaple:
+```````
+	[c]
+		/*
+		Server0u.c
+
+		1. Read server port number from command line
+		2. Create a UDP socket
+		3. Bind the socket to a specific UDP port and any IP address available on the local host
+		4. Repeat forever:
+			a. read a datagram
+			b. send the same datagram back to the client
+		*/
+	
+	[c]
+
+
+
+
+
+
+
+
+--------------------------------------------------
+Blocking and I/O Multiplexing
+--------------------------------------------------
+A process blocked on a primitive (e.g. recv) cannot react to other events (e.g. data arriving on another socket)
+	-> Sometimes blocking on a single operation is undesirable (e.g. the socket where the next data will arrive is not known in advance)
+
+Possible solutions
+	1. change the default blocking I/O mode of the socket into nonblocking I/O (if an operation cannot be completed without blocking, an "EWOULDBLOCK" error is immediately returned)
+	2. use I/O multiplexing primitives ("select" and "poll")
+	3. use signal-driven I/O or asynchronous I/O primitives (Unix)
+
+
+Comparison of I/O modes (Read):
+````````````````````````````
+	page 57
+
+
+
+
+I/O Multiplexing with "select":
+```````````````````````
+	The select function lets a process wait for events
+		events that are interesting for the process can be specified
+			-> read operation would not block on a given socket (data are available)
+			-> accept operation would not block on a given socket (a connection is ready to be accepted)
+		
+		a maximum amount of time for waiting can be specified (timeout)
+		when invoked, the invoking process blocks until at least one of the events declared as interesting happens or the timeout expires
+
+	By declaring multiple interesting event kinds, a single process can multiplex I/O.
+
+
+
+	Select: Events
+	````````````
+		An event can correspond to the occurrence of
+			1. a condition that guarantees that a given operation can complete without blocking:
+				-> Socket ready for reading is the OR of the following conditions:
+					• there is at least one established connection ready to be accepted
+					(passive SOCK_STREAM sockets)
+
+					• there are available data to be read from the receiver buffer
+					(connected SOCK_STREAM sockets)
+
+					• there is a received datagram ready to be read from the receiver buffer
+					(SOCK_DGRAM sockets)
+
+					• an error occurred or the read-side of the connection has been closed
+				
+				-> Socket ready for writing is the OR of the following conditions:
+					• the socket transmission buffer is not full (writing is possible without blocking)
+					• an error occurred or the write-side of the connection has been closed
+
+			2. an exception:
+				-> urgent data are available
+
+
+
+
+Glossary
+-------
+communication 		-> 	comm.
+
+Layer 7: Application
+Layer 6: Presentation
+Layer 5: Session
+Layer 4: Transport
+Layer 3: Network
+Layer 2: Data Link
+Layer 1: Physical

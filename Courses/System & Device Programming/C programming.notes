@@ -790,7 +790,7 @@ Pipes:
 		3. The child process inherits the file descriptors
 
 			parent 												child
-		---------------- 										---------------
+		----------------------------------------------------------------------------
 		fd[0]	fd[1]										fd[0]	fd[1]
 		|		|__________ 				______________|			|
 		|						KERNEL 								|
@@ -2034,6 +2034,112 @@ Linux SHELL:
 	! more > u04s07-pipeLinuxCommands.pdf
 
 
+
+
+
+Semaphore by means of a pipe:
+``````````````````````````
+	Given a pipe
+		The counter of a semaphore is achieved by means of "tokens"
+		"Signal" writes a token on the pipe (non-blocking)
+		"Wait" reads a token from the pipe (blocking)
+
+							___________________
+	 write 		----------->|___________________|---------------> 	 read
+	(signal)																(wait)
+
+
+
+
+semaphoreInit(s):
+```````````````
+	[c]
+		#include <unistd.h>
+
+		void semaphoreInit (int *S, int k) {
+			char ctr = 'X';
+			int i;
+			if (pipe (S) == -1) {
+				printf (“Error”);
+				exit (-1);
+			}
+
+			// Writes k characters, i.e., initializes the semaphore counter to k
+			for(i=0;i<k,i++)
+				if (write(S[1], &ctr, sizeof(char)) != 1) {
+				printf (“Error”);
+				exit (-1);
+			}
+			return;
+		}
+	[c]
+
+
+semaphoreSignal(s):
+````````````````
+	Writes a character (any) on a pipe. Suppose the number of "writes (signals)" before a "read (wait)" not exceed the dimension of the pipe
+
+	[c]
+		#include <unistd.h>
+		
+		void semaphoreSignal (int *S) {
+			char ctr = 'X';
+
+			//Writes a single character, i.e., increments the semaphore counter k
+			if (write(S[1], &ctr, sizeof(char)) != 1) {
+				printf (“Error”);
+				exit (-1);
+			}
+			return;
+		}
+	[c]
+
+
+
+
+semaphoreWait(s):
+````````````````
+	Reads a character from a pipe (read is blocking )
+
+	[c]
+		#include <unistd.h>
+
+		void semaphoreWait (int *S) {
+			char ctr;
+
+			//If the pipe is empty, read() waits
+			if (read (S[0], &ctr, sizeof(char)) != 1) {
+				printf (“Error”);
+				exit (-1);
+			}
+
+			return;
+		}
+	[c]
+
+
+Example:
+	[c]
+		int main() {
+			int S[2];
+			pid_t pid;
+			semaphoreInit (S, 0);
+
+			pid = fork();
+			// Check for correctness
+			if (pid == 0) { // child process
+				semaphoreWait (S);
+				printf("Wait done.\n");
+			} else { // parent process
+				printf("Sleep 3s.\n");
+				sleep (3);
+				semaphoreSignal (S);
+				printf("Signal done.\n");
+			}
+
+			return 0;
+		}
+	[c]
 
 
 

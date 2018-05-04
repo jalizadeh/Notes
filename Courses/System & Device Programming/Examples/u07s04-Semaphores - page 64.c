@@ -4,47 +4,48 @@
 #include <semaphore.h>
 #include <pthread.h>
 
+
+void semaphoreInit (int *S, int k) {
+	char ctr = 'X';
+	int i;
+	if (pipe (S) == -1) {
+		printf ("Error");
+		exit (-1);
+	}
+
+	// Writes k characters, i.e., initializes the semaphore counter to k
+	for(i=0; i<k; i++)
+		if (write(S[1], &ctr, sizeof(char)) != 1) {
+		printf ("Error");
+		exit (-1);
+	}
+	return;
+}		
+
+
 void semaphoreWait (int *S) {
-			char ctr;
+	char ctr;
 
-			//If the pipe is empty, read() waits
-			if (read (S[0], &ctr, sizeof(char)) != 1) {
-				printf (“Error”);
-				exit (-1);
-			}
+	//If the pipe is empty, read() waits
+	if (read (S[0], &ctr, sizeof(char)) != 1) {
+		printf ("Error");
+		exit (-1);
+	}
 
-			return;
-		}
+	return;
+}
 
 
 void semaphoreSignal (int *S) {
-			char ctr = 'X';
+	char ctr = 'X';
 
-			//Writes a single character, i.e., increments the semaphore counter k
-			if (write(S[1], &ctr, sizeof(char)) != 1) {
-				printf (“Error”);
-				exit (-1);
-			}
-			return;
-		}
-
-
-		void semaphoreInit (int *S, int k) {
-			char ctr = 'X';
-			int i;
-			if (pipe (S) == -1) {
-				printf (“Error”);
-				exit (-1);
-			}
-
-			// Writes k characters, i.e., initializes the semaphore counter to k
-			for(i=0;i<k,i++)
-				if (write(S[1], &ctr, sizeof(char)) != 1) {
-				printf (“Error”);
-				exit (-1);
-			}
-			return;
-		}		
+	//Writes a single character, i.e., increments the semaphore counter k
+	if (write(S[1], &ctr, sizeof(char)) != 1) {
+		printf ("Error");
+		exit (-1);
+	}
+	return;
+}
 
 int main() {
 	int S[2];

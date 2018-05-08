@@ -2024,7 +2024,7 @@ Dynamic Linking:
 	Linking postponed until execution time
 	Small piece of code, stub, used to locate the appropriate memory-resident library routine
 	Stub replaces itself with the address of the routine, and executes the routine
-	Operating system needed to check if routine is in processes’ memory address
+	Operating system needed to check if routine is in processes` memory address
 	Dynamic linking is particularly useful for libraries 
 	System also known as "shared libraries"
 
@@ -2223,13 +2223,102 @@ Shared Pages:
 
 Structure of the Page Table:
 ```````````````````````
-	Hierarchical Paging
-	Hashed Page Tables
-	Inverted Page Tables
+	1. Hierarchical Paging:
+	``````````````````
+		Breaks up the logical address space into multiple page tables
+		
+		"Two-Level Page Table" technique
+			-> photo page 38
+
+		Example:
+			A logical address (on 32-bit machine with 1K page size) is divided into:
+				a page number consisting of 22 bits
+				a page offset consisting of 10 bits
+			
+			Since the page table is paged, the page number is further divided into:
+				a 12-bit page number
+				a 10-bit page offset
+			
+			Thus, a logical address is as follows:
+
+						page number  	| 	page offset
+						-------------------------------------
+						pi 		| 	p2 	| 		d
+						12 		| 	10 	|		10
+
+				where <pi> is an index into the outer page table, and <p2> is the displacement within the page of the outer page table
+
+				-> photo page 40
+
+		"Three-level Paging Scheme"
+			-> photo page 41
+
+
+	2. Hashed Page Tables:
+	````````````````````
+		Common in address spaces > 32 bits
+		The virtual page number is hashed into a page table. This page table contains a chain of elements hashing to the same location.
+		Virtual page numbers are compared in this chain searching for a match. If a match is found, the corresponding physical frame is extracted.
+
+		-> photo page 43
+
+
+	3. Inverted Page Tables:
+	````````````````````
+		One entry for each real page of memory
+		Entry consists of the virtual address of the page stored in that real memory location, with information about the process that owns that page
+		Decreases memory needed to store each page table, but increases time needed to search the table when a page reference occurs
+		Use hash table to limit the search to one — or at most a few — page-table entries
+
+		-> photo page 45
+
+
+
+
+Segmentation:
+````````````
+	Memory-management scheme that supports user view of memory
+	A program is a collection of segments. A segment is a logical unit such as:
+		main program,
+		procedure,
+		function,
+		method,
+		object,
+		local variables, global variables,
+		common block,
+		stack,
+		symbol table, arrays
 	
 
+	User`s View of a Program 	 -> page 48
+	Logical View of Segmentation -> page 49
 
 
+	Architecture:
+	``````````
+		Logical address consists of a two tuple:
+				<segment-number, offset>
+
+		Segment table: maps two-dimensional physical addresses; each table entry has:
+			"base": contains the starting physical address where the segments reside in memory
+			"limit": specifies the length of the segment
+
+		"Segment-table base register (STBR)" points to the segment table`s location in memory
+		"Segment-table length register (STLR)" indicates number of segments used by a program;
+			
+			segment number "s" is legal if "s" < "STLR"
+
+		Protection
+			With each entry in segment table associate:
+				validation bit = 0 ⇒ illegal segment
+				read/write/execute privileges
+
+		Protection bits associated with segments; code sharing occurs at segment level
+		Since segments vary in length, memory allocation is a dynamic storage-allocation problem
+		A segmentation example is shown in the following diagram
+
+	-> photo page 51
+	-> examples & more page 52 to 59
 
 
 

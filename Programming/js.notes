@@ -106,7 +106,7 @@ VARIABLE:
 
 		//also can remove "var", not good
 		msg = "Hello";
-	[end]
+	[js]
 
 
 
@@ -253,7 +253,7 @@ BITWISE OPERATORS:
 
 				// for showing -25, add "+1"
 				alert(num2 +1);			// -25			
-			[end]
+			[js]
 
 
 	and: (&)
@@ -355,8 +355,8 @@ Operator Precedence Classes:
 	8. 		| 									// bitwise or
 	9. 		^ 									// bitwise exor
 	10. 	< > >= >= 						// relational
-	11. 	==   ===   !=    !== 				// equality
-	12. 	&& 									// logical and
+	11. 	==   ===   !=    !== 			// equality
+	12. 	&& 								// logical and
 	13. 	| 									// logical or
 	14. 	? : 									// ternary cond.
 	15. 	= += -= 	*= /= 	%= 			// assignment
@@ -1487,3 +1487,38 @@ The Client Environment (I/O):
 
 
 	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Sample Codes:
+-------------------------------------------
+	[js]
+		// get item value, like text box`s
+		var value = document.getElementById('textbox_id').value;
+
+		// set item value, like text box`s
+		document.getElementById('gadget_url').value = '';
+
+
+		//get date -  Sunday is 0, Monday is 1, and so on... ( 0 - 6)
+		var givendate = '2014-05-20';
+		var date = new Date(givendate);
+		console.log(date.getDay());
+	[js]

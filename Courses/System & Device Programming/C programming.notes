@@ -1942,6 +1942,7 @@ Pthread mutex:
 
 -------------------------------------------------
 Main Memory
+chapter 8
 --------------------------------------------------
 
 Objectives:
@@ -2328,22 +2329,202 @@ Segmentation:
 
 
 
+-------------------------------------------------
+Virtual Memory
+chapter 9
+--------------------------------------------------
+Objectives:
+`````````
+	To describe the benefits of a virtual memory system
+	To explain the concepts of demand paging, page-replacement algorithms, and allocation of page frames
+	To discuss the principle of the working-set model
+
+
+
+Background:
+``````````
+	"Virtual memory" – separation of user logical memory from physical memory.
+		<Only part of the program needs to be in memory for execution>
+		Logical address space can therefore be much larger than physical address space
+		Allows address spaces to be shared by several processes
+		Allows for more efficient process creation
+	
+	"Virtual memory" can be implemented via:
+		Demand paging
+		Demand segmentation
+
+
+Demand Paging:
+`````````````
+	Bring a page into memory only when it is needed
+		Less I/O needed
+		Less memory needed
+		Faster response
+		More users
+	
+	Page is needed ⇒ reference to it
+		-> invalid reference ⇒ abort
+		-> not-in-memory ⇒ bring to memory
+	
+	"Lazy swapper" never swaps a page into memory unless page will be needed.	Swapper that deals with pages is a "pager"
+
+
+	"SWAP OUT": 	<Main Memory> to <Disk Space>
+	"SWAP IN": 	<Disk Space> to <Main Memory>
 
 
 
 
+Valid-Invalid Bit:
+`````````````
+	With each page table entry a valid–invalid bit is associated
+		"v" 	⇒ in-memory
+		"i" 	⇒ not-in-memory
+	
+	Initially valid–invalid bit is set to "i" on all entries
+	
+	Example of a page table snapshot:
+						PAGE Table
+					--------------------------
+					<page #>	|	<frame #> 	| <v/i bit>
+					0			|		...			|	v
+					1			|		...			|	i
+					2			|		.
+					.			|		.
+					.			|		.
+
+
+Page Fault:
+``````````
+	During address translation, if valid–invalid bit in page table entry
+		is I ⇒ page fault
+
+	If there is a reference to a page, first reference to that page will trap to operating system:
+		(+photo page 14)
+		1. Operating system looks at another table to decide:
+			Invalid reference ⇒ abort
+			Just not in memory
+		2. Get empty frame
+		3. SWAP IN page into frame (physical memory)
+		4. Reset page tables
+		5. Set validation bit = "v"
+		6. Restart the instruction that caused the page fault
+
+	Restart instruction
+		block move
+		auto increment/decrement location
+
+
+	Performance:
+		Page Fault Rate 0 ≤ p ≤ 1.0
+			if p = 0 no page faults
+			if p = 1, every reference is a fault
+
+		Effective Access Time (EAT)
+			EAT 	= (1 – p) x memory access
+					+ p (page fault overhead
+						+ swap page out
+						+ swap page in
+						+ restart overhead )
+
+		Example:
+			Memory access time = 200 nanoseconds
+			Average page-fault service time = 8 milliseconds
+			
+			EAT 	= (1 – p) x 200 + p (8 milliseconds)
+					= (1 – p x 200 + p x 8,000,000
+					= 200 + p x 7,999,800
+			
+			If one access out of 1,000 causes a page fault, then
+				EAT = 8.2 microseconds.
+				This is a slowdown by a factor of 40!!
 
 
 
+Process Creation:
+``````````````
+	Virtual memory allows other benefits during process creation:
+		Copy-on-Write
+		Memory-Mapped Files (later)
 
 
+	Copy-on-Write:
+	````````````
+		COW allows both parent and child processes to initially share the same pages in memory. If either process modifies a shared page, only then, the page is copied into a new frame
+		COW allows more efficient process creation as only modified pages are copied
+		Free pages are allocated from a "pool" of zeroed-out pages
 
 
+		What happens if there is no free frame?
+			1. "Page replacement" find some page in memory, but not really in use, swap it out
+
+				- Prevent over-allocation of memory by modifying page-fault service routine to include page replacement
+				- Use modify (dirty) bit to reduce overhead of page transfers – only modified pages are written to disk
+				- Page replacement completes separation between logical memory and physical memory – large virtual memory can be provided on a smaller physical memory
+
+				1.1. Basic Page Replacement
+					1. Find the location of the desired page on disk
+					2. Find a free frame:
+						- If there is a free frame, use it
+						- If there is no free frame, use a page replacement algorithm to select a victim frame
+					3. Bring the desired page into the (newly) free frame; update the page and frame tables
+					4. Restart the process
+
+				Algorithm:
+					Want lowest page-fault rate
+					Evaluate algorithm by running it on a particular string of memory references (reference string) and computing the number of page faults on that string
+					
+					In all our examples, the reference string is
+						"1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5"
+
+					Page Replacement Strategy
+						more page 28
+
+					First-In-First-Out (FIFO) Algorithm:
+						-> insert one item from the string
+						- if it is already in the table, dont insert and its TRUE (no fault)
+						- if it isn`t there, insert and give a Fault
+							-- if there is an empty place, just put it in the first-available
+							-- if there is no place, put it in the place of most occuring item
+
+					FIFO Optimal Algorithm:
+						Replace page that will not be used for longest period of time
+
+						-> insert one item from the string
+						- if it is already in the table, dont insert and its TRUE (no fault)
+							-- mark as recently used
+						- if it isn`t there, insert and give a Fault
+							-- if there is an empty place, just put it in the first-available
+							-- if there is no place, put it in the place of oldest & not-used item
+
+					Least Recently Used (LRU) Algorithm:
+						Every page entry has a counter; every time page is referenced through this entry, copy the clock into the counter. When a page needs to be changed, look at the counters to determine which are to change
+
+						"Stack implementation" keep a stack of page numbers in a double link form:
+							Page referenced:
+								move it to the top
+								requires 6 pointers to be changed
+							No search for replacement
+							(more page 38)
 
 
+					LRU Approximation Algorithms:
+						Reference bit
+							With each page associate a bit, initially = 0
+							When page is referenced bit set to 1
+							Replace the one which is 0 (if one exists)
+								We do not know the order, however
+						
+						Second chance
+							Need reference bit
+							Clock replacement
+							If page to be replaced (in clock order) has reference bit = 1 then:
+								set reference bit 0
+								leave page in memory
+								replace next page (in clock order), subject to same rules
 
 
-
+			2. Same page may be brought into memory several times
 
 
 

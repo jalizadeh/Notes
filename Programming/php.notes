@@ -1,0 +1,34 @@
+
+
+Logical Operators
+	Example 		Name 		Result
+	-----------------------------------------
+	$a and $b 		And 		TRUE if both $a and $b are TRUE.
+	$a or $b 		Or 			TRUE if either $a or $b is TRUE.
+	$a xor $b 		Xor 		TRUE if either $a or $b is TRUE, but not both.
+	"!" $a 			Not 		TRUE if $a is not TRUE.
+	$a && $b 		And 		TRUE if both $a and $b are TRUE.
+	$a || $b 		Or 			TRUE if either $a or $b is TRUE.
+
+
+
+
+for using php in .html files:
+	-> in cmd / shell
+		"echo AddType application/x-httpd-php .htm .html > .htaccess"
+
+
+
+
+Cookie
+	[php]
+		
+		<?php
+		$value = 'something from somewhere';
+
+		setcookie("TestCookie", $value);
+		setcookie("TestCookie", $value, time()+3600);  /* expire in 1 hour */
+		setcookie("TestCookie", $value, time()+3600, "/~rasmus/", "example.com", 1);
+		?>
+
+	[php]

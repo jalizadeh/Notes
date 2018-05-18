@@ -1,8 +1,8 @@
-#Github
+# Github
 
 
 
-##What is Github:
+## What is Github:
 
 1. publishing tool
 2. version control system
@@ -16,13 +16,13 @@
 [https://help.github.com/](https://help.github.com/)
 
 
-##Version control Software:
+## Version control Software:
 1. Track changes to projects over time
 2. This allows you to track progress  to revert to eaarlier versions
 3. They can help prevent you form losing work and keeping this organized
 
 
-##How Git Works:
+## How Git Works:
 1. Taking snapshots also known as "commit"
 2. Working directory
 3. Changes are kept in "Stagin Area"
@@ -38,7 +38,7 @@
 
 
 
-##Configure Git:
+## Configure Git:
 	(open cmd)
 	git config --global user.name "YOUR.GITHUB.USERNAME"
 	git config --global user.email  "XXX@XXX.com"
@@ -49,7 +49,7 @@
 
 
 
-##First Repository:
+## First Repository:
 	(open cmd)
 	make & go inside the forlder
 	git init				// to initialize an empty repository
@@ -66,17 +66,17 @@
 
 	git diff 						// shows changes
 
-##Add a Repository:
+## Add a Repository:
 If you have initiated your repository locally and now want to put it in a repository on Github, [follow this](https://help.github.com/articles/adding-an-existing-project-to-github-using-the-command-line/)
 
 
 
-##Get differences:
+## Get differences:
 	git diff
 
 
 
-##Branching:
+## Branching:
 	git branch							//list of branches
 
 	git branch <branch_name>			//create a branch
@@ -92,7 +92,7 @@ If you have initiated your repository locally and now want to put it in a reposi
 
 
 
-##Merge:
+## Merge:
 	// 1. go to the main branch
 	// 2. merge main branch with <branch_name>
 	

@@ -8,3 +8,8 @@ Summary and abstraction of programming languages or courses that I`m studying.
 For enjoying reading these ".notes" files, you need **[Sublime](https://www.sublimetext.com/)** and add the package **[Sublime Notes](https://packagecontrol.io/packages/Notes)** 
 
 ***Work In Progress...***
+
+
+#MD Instruction
+------------------
+**[Mastering Markdown](https://guides.github.com/features/mastering-markdown/)**

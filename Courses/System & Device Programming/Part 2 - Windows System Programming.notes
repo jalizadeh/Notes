@@ -1,0 +1,356 @@
+Part II
+Windows System Programming
+---------------------------------------
+
+
+Preface:
+---------------
+	Develop applications with the Windows API
+	Programming topics
+		File and directory management
+		Exception handling
+		Memory management
+		Develop multi-process and multi-threaded applications
+		Use process/thread synchronization
+		Manage inter-process/thread communication
+	Use Visual Studio to develop, debug, test, and manage applications
+
+
+
+Programming Principles:
+------------------------------
+	Windows does support many standards
+		Standard C, C++, etc.
+		C library is always available but you cannot fully exploit Windows with it
+			For example in C it is not possible to
+				Lock a file or a part of it
+				Mapping a file into main memory
+				Organize inter-process communication
+
+
+	Windows APIs
+		Are defined in C language
+			Not in C++ !
+		Go beyond standard C
+			Reduce code portability
+			Increase code functionality
+		Are different from other standard (POSIX, etc.)
+			Require is own coding style and technique
+			Use "threads" (not "processes") as basic unit of execution
+				A process can contain one or more threads
+				Each process has its own code and data address space
+				Threads share the process address space
+				Threads are “lightweight” and more efficient than processes
+
+	When programming in the Microsoft Visual Studio
+		C++ environment remember to include "windows.h" which included most of the required data (winnt.h, winbase.h, etc.)
+	
+	Windows is rich and flexible
+		Many functions perform the same or similar operations
+		Each function has numerous parameters and flags
+		Occasional artifacts from 16-bit Windows
+			Windows 32 was created from scratch but designed to be backward-compatible
+
+
+	Windows names for 
+		Functions are long and descriptive
+			WaitForSingleObject, WaitForMultipleObjects, etc.
+		
+		Variables are long and descriptive and often use Hungarian notation
+			lpFileName, lpBuffer, nNumberOfBytesToRead, etc.
+			//^^^^^ Long Pointer [to a zero terminated string]
+
+		Symbolic constants and flags explain their meaning
+			INVALID_HANDLE_VALUE, GENERIC_READ, etc.
+
+
+	Nearly every resource is a kernel object
+	Objects are identified and referenced by handle
+	Handle objects are of type "HANDLE"	// Similar to UNIX's file descriptor or process id
+		
+	HANDLE objects include
+		Files, pipes, processes, memory mapping, threads, events, mutexes, semaphores
+	
+	HANDLEs are gray boxes
+		Kernel objects must be manipulated by Windows APIs
+
+
+	Specific names for Microsoft Visual C and the Microsoft compiler
+		"_ keywordName", "_functionName"
+	
+	Functions
+		CloseHandle applies to (nearly) all objects
+		ReadFile, WriteFile, and many other return Boolean values
+		GetLastError returns system error codes
+
+
+	Predefined descriptive data types
+		Are expressed in upper case
+			BOOL, DWORD, LPDWORD, etc.
+		
+		Avoid the '*' operator and make (name) distinctions
+			● LPTSTR:		Long Pointer To STRing defined as TCHAR *
+			● LPCTSTR:	Long Pointer Constant To STRing defined as const TCHAR *
+
+			// "LP" is obsolete and inconsistently used
+			// "WIN32" appears in macro names even when the macro is for 64 bits
+
+
+
+Coding Systems:
+-------------------------
+	Windows supports executable code build in
+		16 (Win16), 32 (Win32), 64 (Win64) bits
+		16-bit versions are only for backward compatibility
+		32-bit versions run on 64-bit architecture but cannot exploit the larger address space
+
+	Most of the difference concern the pointer size
+		Avoid any assumption about pointer length
+		Win64 uses 64-bit pointers
+			DWORD32, DWORD64, POINTER_32, POINTER_64, LONG32, LONG64, etc.
+
+	Four different coding strategies are possible
+		-> 8-bit only
+			Use char (or CHAR) and C library such as printf, scanf, strcmp, etc.
+		
+		-> Unicode only
+			Use only 16-bit chars by defining proper variable (UNICODE and _UNICODE)
+		
+		-> 8-bit and Unicode with generic code
+			Use generic functions to be mapped on 8-bit or unicode functions
+		
+		-> 8-bit and Unicode with run-time selection
+			Use 8-bit or unicode functions on purpose
+
+
+	To assure maximum flexibility and source portability
+		Define all characters and strings using generic type TCHAR
+		Calculate lengths using sizeof(TCHAR)
+		TCHAR is mapped on
+			ANSI ASCII coding when it is on 8-bits
+				● char (or CHAR)
+			
+			Unicode UTF-16 coding when it is mapped on 16-bits
+				● WCHAR or (wchar_t)
+
+
+	Generic strings:
+	`````````````
+		Constant strings are expressed in one of three forms
+			"This string uses 8-bit characters" 	// ANSI C
+			
+			L"This string uses 16-bit characters" 	// ANSI C
+			
+			_T("This string uses generic characters") 	//A macro
+				Expands to "T…" if UNICODE is not defined
+				Expenad to L"T…" if UNICODE is defined
+				The TEXT macro is the same as _T
+			
+			LPTSTR expands to either char * or wchar_t *
+
+
+	Coding Systems:
+	``````````````
+		To select the coding system include
+			#define UNICODE
+				● To get WCHAR in all source modules
+			
+			#undef UNICODE
+				● To get CHAR
+			
+			! Define UNICODE before #include <windows.h>
+
+			[c++]
+				#ifdef UNICODE
+				#define TCHAR WCHAR
+				#else
+				#define TCHAR CHAR
+				#endif
+			[c++]
+
+
+
+
+	The generic C library:
+	``````````````````
+		To make available a wide class of string processing and I/O functions include
+			"#define _UNICODE"
+			Consistently with UNICODE
+			This enables functions such as
+				_fgettc, _itot, _ttoi, _totupper, _totlower
+				And many more, nearly the complete library
+			
+			Also, locale-specific functions (seven in all)
+				lstrlen, lstrcmp, lstrcpy, lstrcat, …
+
+
+		To get generic C library text macros and functions
+			Include "#include <tchar.h>" after "<windows.h>"
+
+		Use the generic C library for all string functions
+			"_tprintf"		in place of 		"printf"
+			"_stprintf" 		in place of 		"sprintf"
+			"_tcslen"		in place of 		"strlen"
+			"_itot"			in place of 		"itoa"
+			…
+
+
+	Main Program Definition:
+	````````````````````
+		[c++]
+			// tchar.h
+			#ifndef _TCHAR_H_
+			#define _TCHAR_H_
+			...
+			#ifdef _UNICODE
+			/* Unicode functions */
+			// Windows standard library functions
+			#define _tprintf wprintf
+			#define _ftprintf fwprintf
+			#define _stprintf swprintf
+			...
+			#else
+			/* Non-unicode (standard) functions */
+			// ANSI C standard library functions
+			#define _tprintf printf
+			#define _ftprintf fprintf
+			#define _stprintf sprintf
+			...
+			#endif
+			#endif
+		[c++]
+
+
+		Pay attention on how the main header is defined
+			"int main (int argc, char * argv[])"
+				Is for 8-bit characters only
+			
+			"int main (int argc, w_char * argv[])"
+				8-bit definition header but with wide-characters
+				ASCII is no entirely accurate but it is used sometimes
+			
+			"int wmain (int argc, w_char *argv[])"
+				Is for Unicode characters only
+			
+			"int _tmain (int argc, LPTSTR argv[])"
+				Expands to main or wmain depending on definition of _UNICODE
+				This assures correct operations in all combinations
+
+
+
+			[c++]
+				// Generic code (mapped on 16-bits)
+				#define UNICODE
+				#define _UNICODE
+				
+				// Remove Warnings from project in Visual Studio
+				#define _CRT_SECURE_NO_WARNINGS
+				
+				// C library and macros available
+				// Windows and standard C libraries
+				#include <windows.h>
+				#include <tchar.h>
+				...
+				
+				// Generic header (mapped on 8 or 16 bits)
+				int _tmain (int argc, LPTSTR argv[]) {
+					...
+				}
+
+			[c++]
+
+
+	Examples:
+	````````
+		[c++]
+			// C Library Implementation
+			#include <stdio.h>
+			#define N 256
+
+			int main(int argc, char *argv[])
+			{
+
+			    if(argc != 3){
+			        printf("not enough args");
+			        return 0;
+			    }
+			    
+			    FILE *fpIn, *fpOut;
+			    size_t nIn, nOut;
+			    char str[N];
+			    
+			    // ‘b’: Binary mode (no meaning for UNIX)
+			    fpIn = fopen(argv[1], "rb");
+			    fpOut = fopen(argv[2], "wb");
+			    
+			    if(fpIn == NULL || fpOut == NULL){
+			        printf("There was an error with files");
+			        return 0;
+			    }
+
+			    // nIn = Number of objects read or written
+			    // fread Parameters:
+			    //  Data structure pointer, Size of the structure, Number of elements, File pointer 
+			    while((nIn = fread(str, 1, N, fpIn)) > 0){
+			        nOut = fwrite(str, 1, nIn, fpOut);
+			                                // ^^^^ Synchronous I/O (wait to terminate) No file security control No file locking
+			        if(nOut != nIn){
+			            printf("I/O error");
+			            return 0;
+			        }
+			    }
+
+			    fclose(fpIn);
+			    fclose(fpOut);
+
+			    return 0;
+			}
+		[c++]
+
+
+
+		[c++]
+			//UNIX Implementation
+			#include <stdio.h>
+			#include <fcntl.h>
+			#include <sys/stat.h>
+			#include <sys/types.h>
+			#include <errno.h>
+
+			#define N 256
+
+			int main(int argc , char * argv[]){
+
+			    int fdIn, fdOut;
+			    ssize_t nIn, nOut;
+			    char str[N];
+
+			    //Return file descriptor or -1 on error
+			    //Parameters: Pathname, OR-ing constant from fnctl.h, Access mode
+			    fdIn = open(argv[1], O_RDONLY);
+			    fdOut = open(argv[2], O_WRONLY|O_CREAT, 7777);
+			    if (fdIn==-1 || fdOut==-1) {
+			        printf ("Error opening file.\n");
+			        return 1;
+			    }
+			    
+			    // nIn = Number of objects read or written
+			    // Parameters: File descriptor, Data structure pointer, Number of elements
+			    while((nIn = read(fdIn, str, N)) > 0){
+			        nOut = write(fdOut, str, (ssize_t) nIn);
+			        printf("%d\n", nIn);
+			        if(nOut != nIn){
+			            printf("I/O error");
+			            return 0;
+			        }
+			    }
+
+			    close(fdIn);
+			    close(fdOut);
+
+			    return 1;
+			}
+		[c++]
+
+
+	

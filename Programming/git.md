@@ -50,11 +50,12 @@
 
 
 ## First Repository:
-	(open cmd)
-	make & go inside the forlder
-	git init				// to initialize an empty repository
+	(open cmd) 
+	make a folder & go inside it
+ 
+	git init				 // to initialize an empty repository
 
-	git status 				// current branch and status
+	git status 				 // current branch and status
 
 	git add <filename>			// to add a single file
 	git add *.<extension>		// add files by their extension

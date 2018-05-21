@@ -12,4 +12,6 @@ For enjoying reading these ".notes" files, you need **[Sublime](https://www.subl
 
 #MD Instruction
 ------------------
+**[Writing On Github](https://help.github.com/categories/writing-on-github/)**
+
 **[Mastering Markdown](https://guides.github.com/features/mastering-markdown/)**

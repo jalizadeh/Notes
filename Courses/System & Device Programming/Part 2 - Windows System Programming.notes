@@ -40,7 +40,7 @@ Programming Principles:
 				A process can contain one or more threads
 				Each process has its own code and data address space
 				Threads share the process address space
-				Threads are “lightweight” and more efficient than processes
+				Threads are "lightweight" and more efficient than processes
 
 	When programming in the Microsoft Visual Studio
 		C++ environment remember to include "windows.h" which included most of the required data (winnt.h, winbase.h, etc.)
@@ -354,3 +354,839 @@ Coding Systems:
 
 
 	
+		[c++]
+			// Windows Implementation 1
+			// For now: 
+			// NO #define UNICODE, #define _UNICODE, #include <tchar.h>, etc.
+
+			#include <windows.h>
+			#include <stdio.h>
+
+			#define N 256   //max buffer size
+
+			// Standard main header
+			int main (int argc, LPTSTR argv[]){
+			    HANDLE hIn, hOut;
+			    DWORD nIn, nOut;
+			    
+			    // Windows API standard types
+			    CHAR str[N];
+
+			    // Parameters: 
+			    // File name, Access type, Share mode, Security attribute, 
+			    // Creation mode Flags, Template
+			    hIn = CreateFile(argv[1], GENERIC_READ, 0, NULL, 
+			                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			    
+			    hOut = CreateFile(argv[2], GENERIC_WRITE, 0, NULL,
+			                        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+			    
+			    if(hIn == INVALID_HANDLE_VALUE || hOut == INVALID_HANDLE_VALUE){
+			        // Using standard C library
+			        printf("File access failed.\n");
+			        return 1;
+			    }
+
+			    // Parameters: 
+			    // similar to C & UNIX Error code is returned, number of bytes is a parameter
+			    while(ReadFile(hIn, str, N, &nIn, NULL) && nIn > 0){
+			        WriteFile(hOut, str, nIn, &nOut, NULL);
+			    }
+
+			    CloseHandle(hIn);
+			    CloseHandle(hOut);
+			    return 0;
+			}
+		[c++]
+
+
+
+		[c++]
+			// Windows Implementation 2
+
+			#include <windows.h>
+			#include <stdio.h>
+
+			int main(int argc, LPTSTR argv[]){
+				// Convenience function
+				// Parameters: Input file name, Output file name, Overwrite or not (yes if FALSE)
+			    if(!CopyFile(argv[1], argv[2], FALSE)){
+			        printf("Opening files error\n");
+			        return 1;
+			    }
+
+			    return 0;
+			}
+		[c++]
+
+
+
+
+
+
+-------------------------------------------------
+Chapter 02
+Characters and File Encoding
+-------------------------------------------------
+
+Objectives:
+---------------
+	Standard input and output
+		CreateFile, ReadFile, WriteFile, CloseHandle	
+	
+	File pointers and random file access
+		SetFilePointer, SetFilePointerEx, GetFileSize	
+	
+	File locking
+		LockFileEx, UnlockFileEx
+
+
+
+The File System:
+----------------------
+Windows (natively) supports 4 file systems
+	1. File Allocation Table File System (FAT16, FAT32)
+		Descend from MS-DOS and Windows 3.1 (obsolete)
+		Used for floppies, Windows 9x, USB Disks
+	
+	2. NT File System (NTFS)
+		Support large files, long names, security atts., etc.
+		Supported on all NT kernel versions
+	
+	3. CD-ROM File System (CDFS)
+		Used for CD-ROM (ISO 9660 standard)
+	
+	4. Universal Disk Format (UDF)
+		Used for DVDs
+		Allows adding new files
+
+
+
+File Naming:
+---------------
+Full pathname
+	Can start with a drive name
+		"A:, C:, …"
+	
+	Or with a global root and server name
+		"\\servername\sharename"
+	
+	Pathname separator is a backslash "\"
+	Forward slash "/" (used on native UNIX-like system) is accepted in C/C++
+
+
+Names
+	Cannot use ASCII codes 1–31 or any <, >, :, ", |
+	Can have blanks
+	Are case-insensitive but case-retaining
+		MyFile shows as MyFile but may be referred with myfile, mYfILE, etc.
+	Are up to 255 characters long
+	
+
+A period "." separates a names from extensions
+	The period is in the name
+	There can be more than one
+	"." ("..") indicates current (parent) directory
+
+
+
+ASCII Encoding
+	All data (numbers, characters, pictures, videos, etc.) are stored using some kind of encoding system on a computer
+	
+	The ASCII (American Standard Code for Information Interchange) is one of the de-facto standard for encoding characters
+		A character-encoding scheme
+		Developed from telegraphic codes
+		Originally based on the English alphabet
+		Encodes 128 specified characters into 7-bit (0’s and 1’s binary values)
+
+
+	The number of symbols used in
+		Common natural language
+		Mathematics
+		Programming languages
+		Technical applications
+	far exceeds the 96 printable ASCII codes [128 total, 32 non printable, 96 printable chars]
+	Many extensions to it have been used
+
+
+	Extended ASCII:
+		Extended ASCII (or high ASCII) is 8-bit long
+			Includes the standard 7-bit ASCII characters
+			Others symbols
+			256 – 128 = 128
+			From integer value 128 to integer value 255
+
+		There are several different variations of the 8-bit ASCII table
+			ISO 8859-1 named ISO Latin-1
+			ISO 8859-2 for Eastern European
+			languages
+			ISO 8859-5 for Cyrillic languages
+			…
+
+
+
+Unicode
+	An industry standard for the consistent encoding, representation, and handling of text expressed in most of the world’s writing systems
+		The most recent version is Unicode 9.0 (from June 2016, ISO/IEC 10646:2014 plus Amendments 1 & 2) which Contains a repertoire of more than 110,000 characters and cvers 100 scripts and multiple symbol sets
+		
+	It can be implemented by different encoding
+		An encoding maps (possibly a subset of) the codes to sequences of values in some fixed-size range 
+		Known encodings: UCS (now obsolete) and UTF
+
+
+	UTF encodings
+		UTF-1, UTF-7 obsolete versions
+		UTF-8
+			An 8-bit, variable-width encoding
+			Uses from one to four 8-bit units
+			The first 128 characters coincides with ASCII
+		
+		UTF-16
+			A 16-bit, variable-width encoding
+			Uses one or two 16-bit units
+		
+		UTF-32
+			A 32-bit, fixed-width encoding
+			Easy indexing (fixed-width) but space inefficient
+
+
+
+Text Versus Binary Files:
+	A file is essentially a series of bytes stored one after the other on a physical device
+	Each byte includes 8 bits, whose value is 0 or 1
+	However, most people classify files in two categories
+		"Text or ASCII"
+		"Binary"
+	
+	You've actually worked with both
+		Text: Source files in C, C++, Java, Perl, Python, etc.
+		Binary: Executable files, Word or Excel files, etc.
+
+
+	Text (ASCII) Files
+		A file that consists of ASCII characters
+			When using standard ASCII code, since the minimum workable size is 1 byte and ASCII codes are on 7 bits, the most significant bit is 0
+		
+		ASCII files
+			Are stored as a sequence of binary values, i.e., a sequence of 1's and 0's
+			Are basically binary files, because they store binary numbers
+			<Are binary files that store ASCII codes>	
+
+		Text file are usually line-oriented
+			A newline is a set of bytes which convince the computer to go at the beginning of the next row
+			In UNIX/Linux and Mac OSX a newline is represented by a single character
+				● Line Feed (go to next line, LF, 1010)
+			
+			In Windows a newline is represented by two characters (as former mechanical typewriters)
+				● Line Feed (go to next line, LF, 10 in base 10)
+				● Carriage Return (push the carriage at the beginning of the line, CR , 13 in base 10)
+
+
+	Binary Files
+		An ASCII file is a file in which each character corresponds to one byte written as a sequence of bits
+		
+		What "a binary file" is?
+			It is a sequence of bits (0’s and 1’s)
+			It is not "byte" oriented
+			The smallest unit is a bit
+				It's difficult to edit a binary file as individual bits should be edited
+			Besides standard written characters and newlines there are other symbols as well
+
+		Why do people use binary files anyway?
+			-> Compactness
+			Example: Number 100000 in base 10
+				Text/ASCII format
+					● 6 characters, i.e., 6 bytes
+	 
+				Binary format
+					● An integer value and it can be stored using 4 bytes
+
+			{more examples: page 18}
+
+
+
+Serialization:
+	In the context of data storage, serialization is the process of translating data structure or objects into a format that can be stored
+	
+	Using serialization
+		A structure can be stored in a file (or transmitted across a network connection link) as a unique entity
+		When it is reconstructed (or received later) the resulting series of bits is reread according to the serialization format, and used to create a semantically identical clone of the original object
+	
+	For complex objects, such as those that uses references, this process is not straightforward
+	Several languages directly support object serialization (or object archival)
+
+
+
+
+
+
+File Input/Output:
+	"CreateFile"
+	`````````
+		Opens existing files and creates new ones
+
+		[c]
+			HANDLE CreateFile (
+				LPCTSTR lpName,
+				DWORD dwAccess,
+				DWORD dwShareMode,
+				LPSECURITY_ATTRIBUTES lpsa,
+				DWORD dwCreate,
+				DWORD dwAttrsAndFlags,
+				HANDLE hTemplateFile
+			);
+		[c]
+
+		Returned value:
+			A "HANDLE" to an open file object
+			"INVALID_HANDLE_VALUE" in case of failure
+
+		Parameters:
+			"lpName"
+				Pointer to file name
+				Length limited to
+				MAX_PATH
+				If "\\?\″ is used as prefix it is possible to use name as long as 32K (UNICODE coding)
+
+			"dwAccess"
+				Specify the read and write access
+					● Use GENERIC_READ or GENERIC_WRITE (the term ″GENERIC″ is somehow redundant)
+				Combine flags with the OR operator ″|″
+					● GENERIC_READ | GENERIC_WRITE
+
+			"dwShareMode"
+				File sharing mode
+				Bit-wise OR (″|″) of table flags
+
+				Value 							Action / Meaning
+				-----------------------------------------------------------------------------------------
+				0 									Cannot be shared.
+													Not even the same process can open another handle.
+
+				FILE_SHARE_READ 		Other processes can read concurrently
+				FILE_SHARE_WRITE 		Other processes can write concurrently
+
+
+			"lpsa"
+				Usually <NULL>
+				It points to a SECURITY_ATTRIBUTES structure (advanced topic on secutiry)
+				! Everyone has full control of a newly created file
+
+
+			"dwCreate"
+				Create a file, overwrite existing file, etc.
+				There is no append mode, so if appending is needed, set file pointer to the end of file
+
+				Value 								Action / Meaning
+				-------------------------------------------------------------------------------------
+				CREATE_NEW 					Fails if the file exists
+				CREATE_ALWAYS 				An existing file will be overwritten
+				OPEN_EXISTING 				Fail if the file does not exist
+				OPEN_ALWAYS 					Open the file or create it if it doesn’t exist
+				TRUNCATE_EXISTING 		File length will be set to zero
+
+
+
+			"dwAttrsAndFlags"
+				32 possibile different flags and attributes
+				Attributes are properties of the files themselves
+
+				Value 											Action / Meaning
+				----------------------------------------------------------------------------------
+				FILE_ATTRIBUTE_NORMAL 				No other attributes are set
+				FILE_ATTRIBUTE_READONLY 			Cannot write or delete
+				FILE_FLAG_OVERLAPPED 				For asynch I/O
+				FILE_FLAG_SEQUENTIAL_SCAN 		Provide performance hints
+				FILE_FLAG_RANDOM_ACCESS 			Provide performance hints
+
+
+
+			"hTemplateFile"
+				Usually <NULL>
+				It can be a handle of an open file (opened in GENERIC_READ mode)
+				It forces "CreateFile" to use the same attributes of that file to create the new file
+
+		Notes:
+			There is an "OpenFile()" function
+				Don’t use it
+				It’s obsolete and for 16-bit applications
+			
+			Flags are associated with the file "HANDLE"
+				Different "HANDLEs" referring to the same file can have different flags
+				
+				Example
+					o One "HANDLE" is "overlapped," another not
+					o One "HANDLE" has "FILE_FLAG_SEQUENTIAL_SCAN" and another "FILE_FLAG_RANDOM_ACCESS"
+					o Etc.
+
+					o Different threads or processes can managa a file using different strategies
+				
+
+	"ReadFile"
+		Read file content
+
+		[c]
+			BOOL ReadFile(
+				HANDLE hFile,
+				LPVOID lpBuffer,
+				DWORD nNumberOfBytesToRead,
+				LPDWORD lpNumberOfBytesRead,
+				LPOVERLAPPED lpOverlapped
+			);
+		[c]
+
+		Return
+			"TRUE" if the read succeeds
+				Even if no bytes were read due to an attempt to read past the end of file
+
+			"FALSE" indicates an invalid handle
+				A handle without GENERIC_READ access, etc.
+
+
+		Parameters:
+			"hFile"
+				File handle with GENERIC_READ access
+
+			"lpBuffer"
+				Memory buffer to receive the input data
+
+			"nNumberOfBytesToRead"
+				Number of bytes you expect to read
+
+			"*lpNumberOfBytesRead"
+				Actual number of bytes transferred
+				Zero indicates end of file
+
+			"lpOverlapped"
+				Points to OVERLAPPED structure
+				Often NULL
+				Eventually not NULL for random file access
+
+
+	"WriteFile"
+		Write file content
+
+		[c]
+			BOOL WriteFile (
+				HANDLE hFile,
+				LPCVOID *lpBuffer,
+				DWORD nNumberOfBytesToWrite,
+				LPDWORD lpNumberOfBytesWritten,
+				LPOVERLAPPED lpOverlapped
+			);
+		[c]
+
+		Return
+			TRUE if the function succeeds
+			FALSE otherwise
+		
+		Parameters
+			See the ReadFile function
+
+
+	"CloseHandle"
+		Close a file
+
+		[c]
+			BOOL CloseHandle (
+				HANDLE hObject
+			);
+		[c]
+
+		Return
+			TRUE if the function succeeds
+			FALSE otherwise
+		
+		This function is general purpose and will be used to close handles to many different object types
+
+
+
+	Convenience function to Copy a File:
+		Copy an old file into a new one
+
+		[c]
+			BOOL CopyFile (
+				LPCTSTR lpExistingFile,
+				LPCTSTR lpNewFile,
+				BOOL fFailIfExists
+			);
+		[c]
+
+		Parameters
+			lpExistingFile existing file name
+			lpNewFile new file name
+			If fFailIfExists is FALSE the source file will replace an existing file
+
+		This is a "convenience	function"
+			It is easier to use
+			It provides better performance
+			It preserves the file’s attributes, including time stamps
+
+
+
+
+Console Input/Output:
+----------------------------
+	Console I/O can be performed using "ReadFile" and "WriteFile"
+	
+	It is simpler to use "ReadConsole" and "WriteConsole"
+		It is possible to specify how characters are processed
+		Characters may be processed as bytes or as TCHAR
+	
+	Like in UNIX standard input, output and error are standard devices
+		UNIX refers to them with descriptors 0, 1, 2
+		WINDOWS refers to them using HANDLEs
+
+
+	Standard Devices:
+	``````````````
+		#GetStdHandle
+		Given a device GetStdHandle return its handle
+		
+		[c]
+			// Does not create or duplicate an handle.
+			// It just returns the same handle.
+			HANDLE GetStdHandle (
+				DWORD nStdHandle
+			);
+		[c]
+
+		Return
+			A valid handle in case of success
+			INVALID_HANDLE_VALUE for failure
+		
+		Parameter
+			"nStdHandle" must be one of
+			STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE
+
+
+		
+
+		#SetStdHandle
+		Assign a standard device to a handle
+
+		[c]
+			HANDLE SetStdHandle (
+				DWORD nStdHandle,
+				HANDLE hHandle
+			);
+		[c]
+
+		
+		Return
+			TRUE in case of success
+			FALSE for failure
+
+
+		Parameters
+			"nStdHandle" must be one of
+			STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE
+
+			"hHandle" specifies an open file to be used as a standard device
+		
+			Two reserved pathnames are used for
+				Console input (the keyboard) "CONIN$"
+				Output (the display) "CONOUT$"	
+
+
+
+
+		#Set Console Mode
+		"ReadConsole" and "WriteConsole" process characters according to the console mode set using SetConsoleMode
+
+		[c]
+			BOOL SetConsoleMode (
+				HANDLE hConsoleHandle,
+				DWORD dwMode
+			);
+		[c]
+
+		Return
+			TRUE if and only if the function succeeds
+			FALSE otherwise
+
+
+		Parameters
+			"hConsoleHandle" identifies the device (which must have "GENERIC_WRITE" access)
+			"dwMode" specifies how characters are processed
+
+			Value 												Action / Meaning
+			------------------------------------------------------------------------------------------------
+			ENABLE_LINE_INPUT 							ReadConsole return when it finds a CR
+			ENABLE_ECHO_INPUT 						Echo chars on screen while reading
+			ENABLE_PROCESSED_INPUT 				Process backslash, CR, LF
+			ENABLE_PROCESSED_OUTPUT 			Process backslash, tab, bell, CR, LF
+			ENABLE_WRAP_AT_EOL_OUTPUT		Enable line wrapping on output
+
+
+
+
+		#Read Input Data
+		Read data from console (similar to "ReadFile")
+
+		[c]
+			BOOL ReadConsole (
+				HANDLE hConsoleInput,
+				LPVOID lpBuffer,
+				DWORD cchToRead,
+				LPDWORD lpcchRead,
+				LPVOID lpReserved
+			);
+		[c]
+
+		
+		Return
+			TRUE if and only if the read succeeds
+			FALSE otherwise
+
+
+		Parameters
+			Similar to the one for "ReadFile"
+				Console handle
+				Long pointer to buffer
+				Number of chars to be read
+				Number of chars actually read
+				lpReserved must be <NULL>
+
+
+
+		#Write Input Data
+		Write data to console (similar to WriteFile)
+
+		[c]
+			BOOL WriteConsole (
+				HANDLE hConsoleInput,
+				LPVOID lpvBuffer,
+				DWORD cchToRead,
+				LPDWORD lpcchRead,
+				LPVOID lpvReserved
+			);
+		[c]
+
+		Return
+			TRUE if and only if the read succeeds
+			FALSE otherwise
+
+
+		Parameters
+			Similar to the one for "WriteFile"
+				Console handle
+				Long pointer to buffer
+				Number of chars to be written
+				Number of chars actually written
+				lpReserved must be <NULL>
+
+
+
+
+
+		#Other FUnctions
+		FreeConsole detaches a process from its console
+		AllocConsole creates a new console associated with the process standard input, output o error
+
+		[c]
+			BOOL FreeConsole (VOID);
+			BOOL AllocConsole (VOID);
+		[c]
+
+
+
+
+
+File Pointers and Random Access:
+------------------------------------------
+	Windows (like UNIX) indicates the current byte location in the file
+		The file pointer is associated with the HANDLE, not the file
+			For each handle (even to the same file) there is a file pointer
+		
+		The pointer
+			Is initialized to zero by CreateFile
+			Advances with each read and write operation
+
+
+	In Windows
+		It is possible to explicitly modify file pointers to perform random walks on the file
+		Random waks can be implemented using two different strategies
+			1. Setting the current position using function SetFilePointer (or SetFilePointerEx) before reading or writing
+			2. Setting the current position using the overlapped data structure while reading or writing
+
+
+	#Setting File Pointers
+
+	[c]
+		DWORD SetFilePointer (
+			HANDLE hFile,
+			LONG lDistanceToMove,
+			PLONG lpDistanceToMoveHigh,
+			DWORD dwMoveMethod
+		);
+	[c]
+
+	Return
+		The low-order DWORD (unsigned) of the new file pointer. The high-order portion of the new file pointer goes to the DWORD indicated by "lpDistanceToMoveHigh" (if non-NULL)
+		
+		In case of error, the return value is OxFFFFFFFF
+
+
+	Parameters
+		"hFile"
+			Handle of an open file with read and/or write access
+		
+		"lDistanceToMove"
+			LONG (32bits) signed distance to move or unsigned file position
+
+		"*lpDistanceToMoveHigh"
+			High-order portion of the move distance
+			Can be <NULL> for "small" files
+
+		"dwMoveMethod"
+		Specifies one of the following modes
+
+		Value 							Action / Meaning
+		-----------------------------------------------------------------------------------------
+		FILE_BEGIN 					Position from the start of file
+		FILE_CURRENT 				Move pointer forward or backward
+		FILE_END 						Position backward (or forward) from end of file
+
+
+
+File Pointers with 64-bit Arithmetic:
+--------------------------------------------
+	With "SetFilePointer" file pointers are specified with two 32-bit parts
+	
+	For 64-bit file systems, file pointers are 64 bits long
+		Large files are increasingly important in many applications
+		But many users will only require "short" (< 4GB) files
+	
+	Function "SetFilePointerEx" is the first of many "extended" functions
+		There is no consistency in the extended features or parameters
+
+	Use the "LARGE_INTEGER" data type for 64-bit file positions
+	
+	LARGE_INTEGERs are union of
+		1. A LONGLONG type named QuadPart
+		2. And two 32-bit quantities
+			A DWORD (32-bit unsigned integer) type named LowPart
+			A LONG (32-bit signed integer) type named HighPart
+
+
+		[c]
+			// A union is a special data type available in C 
+			// that allows to store different data types in the same memory location
+			typedef union _LARGE_INTEGER {
+				struct { DWORD LowPart; LONG HighPart; };
+				struct { DWORD LowPart; LONG HighPart; } u;
+				LONGLONG QuadPart;
+			} LARGE_INTEGER, *PLARGE_INTEGER;
+		[c]
+
+								LONGLONG QuadPart				{64 bits}
+						LONG HighPart | DWORD LowPart	{32-32 bits}
+
+		[c]
+			// Sometimes is useful to access 64 bits
+			// (i.e., address increment, etc.),
+			// sometimes it is useful to access two 32-bit fields
+
+			LARGE_INTEGER var;
+			
+			var.QuadPart = ...
+			var.LowPart = ... 		// Get lower 32 bits
+			var.Highart = ...			// Get higher 32 bits
+		[c]
+
+
+
+
+	#SetFilePointerEx
+	Similar to "SetPointerEx" but requires
+		A large integer (liDistanceToMove) to set the required position	
+		A large integer pointer (lpNewFilePointer) to return the actual position
+
+	[c]
+		BOOL SetFilePointerEx (
+			HANDLE hFile,
+			LARGE_INTEGER liDistanceToMove,
+			PLARGE_INTEGER lpNewFilePointer,
+			DWORD dwMoveMethod
+		);
+	[c]
+
+
+	Example:
+		[c]
+			// Update (read-modify-write) same record
+			. . .
+			RECORD r;
+			LARGE_INTEGER FilePos;
+			PLARGE_INTEGER lpFilePos;
+			DWORD n, nRd, nWrt;
+			. . .
+			/* Update reference position (record n) */
+			FilePos.QuadPart = n * sizeof (RECORD);
+			SetFilePointerEx(hFile, FilePos, lpFilePos, FILE_BEGIN /* Set new position */);;
+			ReadFile(hFile, &r, sizeof(RECORD), &nRd, NULL);
+			...
+			/* Update the record */
+			...
+			SetFilePointerEx(hFile, FilePos, lpFilePos, FILE_BEGIN);;
+			WriteFile(hFile, &r, sizeof(RECORD), &nWrt /* Set same position */, NULL);
+		[c]
+
+
+
+
+Overlapped Data Structure:
+---------------------------------
+	Windows provides another way to specify file position
+	
+	The final parameter of "ReadFile" and "WriteFile" is an overlapped data structure
+		This structure has offset fields to specify the starting position of the current read/write operation
+
+	[c]
+		type def struct _OVERLAPPED {
+			DWORD Internal;
+			DWORD InternalHigh;
+			DWORD Offset;
+			DWORD OffsetHigh;
+			HANDLE hEvent;
+		} OVERLAPPED;
+	[c]
+
+
+	Parameters:
+		"Internal" and "InternalHigh"
+			Those two fields are reserved
+			Do not use
+
+		"Offset" and "OffsetHigh"
+			Low order and High order address
+
+		"hEvent"
+			Field is used with asynchronous I/O
+			Must be <NULL>
+
+
+	Example:
+		[c]
+			// Define proper data-structure
+			OVERLAPPED ov = { 0, 0, 0, 0, NULL };
+			RECORD r;
+			LONGLONG n;
+			LARGE_INTEGER FilePos;
+			DWORD nRd, nWrt;
+			. . .
+			/* Update reference position (record n) */
+			FilePos.QuadPart = n * sizeof (RECORD);
+
+			//Set position
+			ov.Offset = FilePos.LowPart;
+			ov.OffsetHigh = FilePos.HighPart;
+
+			//File Position does not change
+			ReadFile(hFile, &r, sizeof(RECORD), &nRd, &ov);
+			...
+			/* Update the record. */
+			...
+			WriteFile(hFile, &r, sizeof(RECORD), &nWrt, &ov);
+		[c]

@@ -31,11 +31,13 @@ Programming Principles:
 	Windows APIs
 		Are defined in C language
 			Not in C++ !
+
 		Go beyond standard C
 			Reduce code portability
 			Increase code functionality
+
 		Are different from other standard (POSIX, etc.)
-			Require is own coding style and technique
+			Requires its own coding style and technique
 			Use "threads" (not "processes") as basic unit of execution
 				A process can contain one or more threads
 				Each process has its own code and data address space
@@ -79,9 +81,9 @@ Programming Principles:
 		"_ keywordName", "_functionName"
 	
 	Functions
-		CloseHandle applies to (nearly) all objects
-		ReadFile, WriteFile, and many other return Boolean values
-		GetLastError returns system error codes
+		"CloseHandle" applies to (nearly) all objects
+		"ReadFile", "WriteFile", and many other return Boolean values
+		"GetLastError" returns system error codes
 
 
 	Predefined descriptive data types
@@ -160,13 +162,13 @@ Coding Systems:
 			
 			! Define UNICODE before #include <windows.h>
 
-			[c++]
+			[c]
 				#ifdef UNICODE
 				#define TCHAR WCHAR
 				#else
 				#define TCHAR CHAR
 				#endif
-			[c++]
+			[c]
 
 
 
@@ -197,7 +199,7 @@ Coding Systems:
 
 	Main Program Definition:
 	````````````````````
-		[c++]
+		[c]
 			// tchar.h
 			#ifndef _TCHAR_H_
 			#define _TCHAR_H_
@@ -218,7 +220,7 @@ Coding Systems:
 			...
 			#endif
 			#endif
-		[c++]
+		[c]
 
 
 		Pay attention on how the main header is defined
@@ -238,13 +240,17 @@ Coding Systems:
 
 
 
-			[c++]
+			[c]
 				// Generic code (mapped on 16-bits)
 				#define UNICODE
 				#define _UNICODE
 				
 				// Remove Warnings from project in Visual Studio
+				// Or if not working, set it in the Preprocessor
+				// https://stackoverflow.com/questions/5100283/how-do-i-setup-visual-studio-to-register-some-defines-globally
+				// put "_CRT_SECURE_NO_WARNINGS" there
 				#define _CRT_SECURE_NO_WARNINGS
+
 				
 				// C library and macros available
 				// Windows and standard C libraries
@@ -257,12 +263,12 @@ Coding Systems:
 					...
 				}
 
-			[c++]
+			[c]
 
 
 	Examples:
 	````````
-		[c++]
+		[c]
 			// C Library Implementation
 			#include <stdio.h>
 			#define N 256
@@ -305,11 +311,11 @@ Coding Systems:
 
 			    return 0;
 			}
-		[c++]
+		[c]
 
 
 
-		[c++]
+		[c]
 			//UNIX Implementation
 			#include <stdio.h>
 			#include <fcntl.h>
@@ -350,11 +356,11 @@ Coding Systems:
 
 			    return 1;
 			}
-		[c++]
+		[c]
 
 
 	
-		[c++]
+		[c]
 			// Windows Implementation 1
 			// For now: 
 			// NO #define UNICODE, #define _UNICODE, #include <tchar.h>, etc.
@@ -397,11 +403,11 @@ Coding Systems:
 			    CloseHandle(hOut);
 			    return 0;
 			}
-		[c++]
+		[c]
 
 
 
-		[c++]
+		[c]
 			// Windows Implementation 2
 
 			#include <windows.h>
@@ -417,7 +423,7 @@ Coding Systems:
 
 			    return 0;
 			}
-		[c++]
+		[c]
 
 
 
@@ -646,17 +652,17 @@ File Input/Output:
 				Pointer to file name
 				Length limited to
 				MAX_PATH
-				If "\\?\″ is used as prefix it is possible to use name as long as 32K (UNICODE coding)
+				If "\\?\" is used as prefix it is possible to use name as long as 32K (UNICODE coding)
 
 			"dwAccess"
 				Specify the read and write access
-					● Use GENERIC_READ or GENERIC_WRITE (the term ″GENERIC″ is somehow redundant)
-				Combine flags with the OR operator ″|″
+					● Use GENERIC_READ or GENERIC_WRITE (the term "GENERIC" is somehow redundant)
+				Combine flags with the OR operator "|"
 					● GENERIC_READ | GENERIC_WRITE
 
 			"dwShareMode"
 				File sharing mode
-				Bit-wise OR (″|″) of table flags
+				Bit-wise OR ("|") of table flags
 
 				Value 							Action / Meaning
 				-----------------------------------------------------------------------------------------

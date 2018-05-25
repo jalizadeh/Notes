@@ -33,6 +33,38 @@ Variabales
 
 
 
+
+
+Boolean
+-----------------------------
+	Using the system header file stdbool.h allows you to use bool as a Boolean data type. true evaluates to 1 and false evaluates to 0.
+
+	[c]
+		#include <stdio.h>
+		#include <stdbool.h>
+		
+		int main(void) {
+		bool x = true; /* equivalent to bool x = 1; */
+		bool y = false; /* equivalent to bool y = 0; */
+		if (x) /* Functionally equivalent to if (x != 0) or if (x != false) */
+			{
+				printf("This will print!");
+			}
+		if (!y) /* Functionally equivalent to if (y == 0) or if (y == false) */
+			{
+				printf("This will also print!");
+			}
+		}
+	[c]
+	
+	bool is just a nice spelling for the data type "_Bool". It has special rules when numbers or pointers are converted to it.
+
+
+
+
+
+
+
 Input / Output
 -------------------------------
 	printf:
@@ -104,6 +136,12 @@ Pointer
 		printf("value of a: %d - address of a: %u", a, &a);	//10 - 5224
 		printf("value of p: %d - address of p: %u", *p, &p);	//10 - 5224
 		printf("value of b: %d - address of b: %u", b, &b);	//10 - 5220
+
+
+		// point to the start of an array
+		int *ptr = arr;
+		// or
+		int *ptr = &arr[0];
 	[c]
 
 
@@ -122,6 +160,47 @@ Pointer
 
 		// for printing p2. note it is double pointer
 		printf("value of p2: %d - address of p2: %u", **p2, &p2);	//10 - 5220
+	[c]
+
+
+
+
+Structure
+-----------------------------------------------------
+	Evaluates into the value denoting the object that is a member of the accessed object.
+
+	[c]
+		struct MyStruct
+			{
+				int x;
+				int y;
+			};
+
+		struct MyStruct myObject;
+		myObject.x = 42;
+		myObject.y = 123;
+		
+		printf(".x = %d, .y = %d\n", myObject.x, myObject.y); /* Outputs ".x = 42, .y = 123". */
+	[c]
+
+
+	Member of pointed-to object
+	Syntactic sugar for dereferencing followed by member access. Effectively, an expression of the form "x->y" is shorthand for "(*x).y" — but the arrow operator is much clearer, especially if the structure pointers are nested.
+
+	[c]
+		struct MyStruct
+		{
+			int x;
+			int y;
+		};
+
+		struct MyStruct myObject;
+		struct MyStruct *p = &myObject;
+		p->x = 42;
+		p->y = 123;
+
+		printf(".x = %d, .y = %d\n", p->x, p->y); /* Outputs ".x = 42, .y = 123". */
+		printf(".x = %d, .y = %d\n", myObject.x, myObject.y); /* Also outputs ".x = 42, .y = 123". */
 	[c]
 
 

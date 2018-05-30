@@ -1019,9 +1019,18 @@ Common Errors & Debugging:
 	        at java_cup.runtime.lr_parser.debug_parse(lr_parser.java:755)
 	        at Main.main(Main.java:11)
 
-	#Solution:
-		-> There is something unmached in input text file
-		-> use "MainDrawTree"
+		#Solution:
+		-> There is something unmached in input text file, so "scanner" cant understand it.
+		
+		[1] 
+			-> first of all, you have to check if your "scanner" is matching the token correctly. Maybe you missed a "+", "*" or ...
+			-> If used in "Rules" part, is it inside "{ }"?
+
+		[2]
+			-> Maybe you forgot to define it
+			-> use "MainDrawTree" to see which item it is, or try to print everything.
+			-> or use following in the "scanner" to show everything not matched 
+				< . 		{System.out.println("ERROR + yytext()");} >
 
 
 
@@ -1033,9 +1042,9 @@ Common Errors & Debugging:
 		symbol:   class Yylex
 		location: class Main
 
-	#Solution:
-		-> check if the "scanner.JFlex" produces "Yylex" or not?
-		-> ther must not be "%class xxxxxxx"
+		#Solution:
+		-> check if the "scanner.jflex" produces "Yylex" or not?
+		-> if "%class xxxxxxx" is used in "scanner", remove it.
 
 
 
@@ -1047,7 +1056,7 @@ Common Errors & Debugging:
 		symbol:   class DisegnaAlbero
 		location: class parser
 
-	#Solution:
+		#Solution:
 
 
 
@@ -1055,14 +1064,14 @@ Common Errors & Debugging:
 	#Error4:
 		terminal / non terminal "XXX" is not declared
 
-	#Solution:
+		#Solution:
 		check the syntaxes "terminal" and "non terminal"
 
 
 	#Error5:
 		"XXXX" is already declared
 
-	#Solution:
+		#Solution:
 		check terminals and non terminals
 
 
@@ -1072,7 +1081,7 @@ Common Errors & Debugging:
 		parser.java:422: error: array required, but Object found
                                 RESULT[0] = a;
 
-     #Solution:
+     	#Solution:
      		define appropriate type for the "non terminals"
      			-> non terminal HashMap attrs;
 			-> non terminal Object[ ] vParam;
@@ -1081,5 +1090,5 @@ Common Errors & Debugging:
 	#Error7:
 		the error shows which line / column
 
-	#Solution:
+		#Solution:
 		95% it is related to the parser grammar

@@ -129,8 +129,8 @@ Pointer
 	[c]
 		// basic rules of pointer
 		int *p, a, b;
-		a = 10;
-		p = &a;	// pointer initialization
+		a = 10; // value inside a
+		p = &a;	// pointer initialization, put the address of "a", inside "p"
 		b = *p;	// accessing "a" through "p" | Also called "Derefrencing of Pointer"
 
 		printf("value of a: %d - address of a: %u", a, &a);	//10 - 5224

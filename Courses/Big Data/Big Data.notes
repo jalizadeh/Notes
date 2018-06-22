@@ -1,0 +1,612 @@
+Hadoop
+-----------------------
+Map function:
+	It is applied over each element of an input data set and emits a set of "(key, value)" pairs
+
+Reduce function:
+	It is applied over each set of "(key, value)" pairs (emitted by the map function) with the same key and emits a set of (key, value) pairs -> Final result
+
+
+Hadoop Program:
+	each part is implemented by means of a specific "class"
+	#Driver
+		main();
+		run();
+	
+	#Mapper
+		Processes the "(key, value)" pairs of the input file and emits "(key, value)" pairs
+
+	#Reducer
+		Processes the "(key, [list of values])" pairs and emits "(key, value)" pairs
+
+
+	Data Types:
+		org.apache.hadoop.io.Text					-> Java String
+		org.apache.hadoop.io.IntWritable			-> Java Integer
+		org.apache.hadoop.io.LongWritable		-> Java Long
+		org.apache.hadoop.io.FloatWritable		-> Java Float
+		...
+
+
+
+
+
+
+
+Spark
+-----------------------
+Spark Program:
+	#Driver
+		Contains the main method
+		Defines the workflow of the application
+		Accesses Spark through the SparkContext object
+			The SparkContext object represents a connection to the cluster
+		Defines Resilient Distributed Datasets (RDDs) that are allocated on the nodes of the cluster
+		Invokes parallel operations on RDDs
+		
+		Local variables
+			The standard variables of the Java programs
+		RDDs
+			Distributed “variables” stored in the nodes of the cluster
+		The SparkContext object allows
+			Creating RDDs
+			“Submitting” executors (processes) that execute in parallel specific operations on RDDs
+			Transformations and Actions
+
+
+	! The name of the input file is parameter -> args[0]
+	! The output of the application is stored in and output folder -> args[1]
+
+
+RDD Operations:
+	Transformations
+	``````````````
+		Transformations are operations on RDDs that return a new RDD. Apply a transformation on the elements of the input RDD(s) and the result of the transformation is “stored in/associated to” a new RDD
+
+
+	Action
+	``````
+		Are operations that
+			1. Return results to the Driver program, like return local (Java) variables
+			2. Or write the result in the storage (output file/folder)
+
+
+	[java]
+		public static void main(String[] args) {
+			// Initialization of the application
+			...
+			// Read the content of a log file
+			JavaRDD<String> inputRDD = sc.textFile("log.txt");
+
+			// Select the rows containing the word “error”
+			JavaRDD<String> errorsRDD = inputRDD.filter(line -> line.contains("error"));
+			
+			
+			{//++ filter(), union(), and distinct() are transformations ++
+				// Select the rows containing the word “warning”
+				JavaRDD<String> warningRDD = inputRDD.filter(line -> line.contains("warning"));
+				
+				// Union errorsRDD and warningRDD
+				// The result is associated with a new RDD: badLinesRDD
+				JavaRDD<String> badLinesRDD = errorsRDD.union(warningRDD);
+
+				// Remove duplicates lines (i.e., those lines containing
+				// both “error” and “warning”)
+				JavaRDD<String> uniqueBadLinesRDD = badLinesRDD.distinct();
+			}
+
+			// Count the number of bad lines by applying
+			// the count() action
+			long numBadLines = uniqueBadLinesRDD.count();
+			
+			// Print the result on the standard output of the driver
+			System.out.println("Lines with problems:"+numBadLines);
+			...
+		}
+	[java]
+
+
+
+Passing Functions to the Transformation & Action:
+	In Java, we pass objects of the classes that implement one of the Spark’s function interfaces
+
+	#Function<T, R>
+	R call(T)
+	This “function” takes in input an object of type T and returns an object of type R
+
+	#Function2<T1, T2, R>
+	R call(T1, T2)
+	This “function” takes in input an object of type T1 and an object of type T2 and returns an object of type R
+
+	#FlatMapFunction<T, R>
+	Iterable<R> call(T)
+	This “function” takes in input an object of type T and returns an Iterable “containing” zero or more objects of type R
+
+
+	[java]
+		// Define a class implementing the Function interface
+		class ContainsErrror implemenets Function<String, Boolean>{
+			public Boolean call(String line){
+				return line.contains("error");
+			}
+		}
+		...
+
+		// Read the content of a log file
+		JavaRDD<String> inputRDD = sc.textFile("log.txt");
+		// Select the rows containing the word “error”
+		JavaRDD<String> errorsRDD = inputRDD.filter(new ContainsError());
+	[java]
+
+
+	[java]
+		//using anonymous function
+		
+		// Read the content of a log file
+		JavaRDD<String> inputRDD = sc.textFile("log.txt");
+
+		// Select the rows containing the word “error”
+		JavaRDD<String> errorLog = inputRDD.filter(
+														new function<String, Boolean>(){
+																public Boolean call(String line){
+																		return line.contains("error");
+																}
+														});
+	[java]
+
+
+
+	[java]
+		// Lambda function
+
+		// Read the content of a log file
+		JavaRDD<String> inputRDD = sc.textFile("log.txt");
+		// Select the rows containing the word “error”
+		JavaRDD<String> errorsRDD = 	inputRDD.filter(x -> x.contains("error"));
+	[java]
+
+
+
+
+
+
+
+Basic Transformations:
+	Some basic transformations analyze the content of one single RDD and return a new RDD
+		filter(), map(), flatMap(), distinct(), sample()
+	
+	Some other transformations analyze the content of two (input) RDDs and return a new RDD
+		union(), intersection(), substract(), cartesian()
+
+	Syntax:
+	``````
+		T = Type of the objects of the RDD on which the transformation is applied
+		R= Type of the objects of the new RDD returned by the applied transformation when the returned RDD can have a data type different from T 
+			i.e., when the returned RDD can have a data type different from the “input” data type
+		The RDD on which the transformation is applied in referred as “input” RDD
+
+
+
+	filter()
+	``````
+		Goal
+		The filter transformation is applied on "one single RDD" and returns a new RDD containing only the elements of the “input” RDD that satisfy a user specified condition
+		
+		Method
+		The filter transformation is based on the JavaRDD<T> filter(Function<T, Boolean>) method of the JavaRDD<T> class
+
+
+		A lambda function implementing the call method of the Function<T, Boolean> interface is passed to the filter method
+			▪The "public Boolean call(T element)" method of the Function<T, Boolean> interface must be implemented
+			▪It contains the code associated with the condition that we want to apply on each element e of the “input” RDD
+		If the condition is satisfied then the call method returns true and the input element e is selected
+		Otherwise, it returns false and the e element is discarded
+
+
+
+		[java]
+			//example page 33
+			//Create an RDD of integers containing the values {1, 2, 3, 3}
+			//Create a new RDD containing only the values greater than 2
+
+			// Create an RDD of integers. Load the values 1, 2, 3, 3 in this RDD
+			List<Integer> inputList = Arrays.asList(1, 2, 3, 3);
+			JavaRDD<Integer> inputRDD = sc.parallelize(inputList);
+			
+			// Select the values greater than 2
+			JavadRDD<String> resRDD = inputRDD.filter(element -> {
+					if(element > 2)
+						return true;
+					else
+						return false;
+				}); 
+		[java]
+
+
+
+	map()
+	`````
+		Goal
+		The map transformation is used to create a new RDD by applying a function on each element of the “input” RDD
+		The new RDD contains exactly one element y for each element x of the “input” RDD
+		The value of y is obtained by applying a user defined function f on x
+			▪y= f(x)
+		The data type of y can be different from the data type of x
+			▪i.e., R and T can be different
+
+
+		Method
+		The map transformation is based on the JavaRDD<R> map(Function<T, R>) method of the JavaRDD<T> class
+		A lambda function implementing the call method of the Function<T, R> interface is passed to the map method
+			▪The public R call(T element) method of the Function<T, R> interface must be implemented
+			▪It contains the code that is applied over each element of the “input” RDD to create the elements of the returned RDD
+		For each input element of the “input” RDD exactly one single new element is returned by the call method
+
+
+
+	[java]
+		//Create an RDD from a textual file containing the surnames of a list of users
+		//Each line of the file contains one surname
+		//Create a new RDD containing the length of each surname
+
+		// Read the content of the input textual file
+		JavaRDD<String> inputRDD = sc.textFile("usernames.txt");
+		
+		// Compute the lengths of the input surnames
+		JavaRDD<Integer> lenghtsRDD  = inputRDD.map(e -> new Integer(e.length()));
+	[java]
+
+
+
+	[java]
+		//Create an RDD of integers containing the values {1, 2, 3, 3}
+		//Create a new RDD containing the square of each input element
+
+		List<Integer> input = Arrays.asList(1,2,3,3);		
+		JavaRDD<Integer> inputRDD = sc.parallelize(input);
+
+		JavaRDD<Integer> resRDD = inputRDD.map(e -> new Integer(e * e));
+	[java]
+
+
+
+	flatMap()
+	```````
+	Goal
+	The flatMap transformation is used to create a new RDD by applying a function f on each element of the “input” RDD
+	The new RDD contains a list of elements obtained by applying f on each element x of the “input” RDD
+	The function f applied on an element x of the “input” RDD returns a list of values [y]
+		▪[y]= f(x)
+		▪[y] can be the empty list
+	The final result is the concatenation of the list of values obtained by applying f over all the elements of the “input” RDD
+		▪i.e., the final RDD contains the “concatenation” of the lists obtained by applying f over all the elements of the input RDD
+		▪Duplicates are not removed
+	The data type of y can be different from the data type of x
+		▪i.e., R and T can be different
+
+
+
+	Method
+	The flatMap transformation is based on the JavaRDD<R> flatMap(FlatMapFunction<T, R>) method of the JavaRDD<T> class
+	
+
+
+	[java]
+		//Create an RDD from a textual file containing a text
+		//Create a new RDD containing the list of words, with repetitions, occurring in the input textual document
+		//Each element of the returned RDD is one of the words occurring in the input textual file
+		//The words occurring multiple times in the input file appear multiple times, as distinct elements, also in the returned RDD
+
+		JavaRDD<String> inputRDD = sc.textFile("log.txt");
+
+		// Compute the list of words occurring in document.txt
+		JavaRDD<String> resRDD = inputRDD.flatMap(e -> Arrays.asList(x.split(" ")).iterator());
+	[java]
+
+
+
+
+
+
+	distinct()
+	````````
+		Goal
+		The distinct transformation is applied on one single RDD and returns a new RDD containing the list of distinct elements (values) of the “input” RDD
+		
+		Method
+		The distinct transformation is based on the JavaRDD<T> distinct() method of the JavaRDD<T> class
+		No classes implementing Spark’s function interfaces are needed in this case
+
+
+	[java]
+		//Create an RDD from a textual file containing the names of a list of users
+		//Each line of the file contains one name
+		//Create a new RDD containing the list of distinct names occurring in the input textual file
+		//The type of the new RDD is the same of the “input” RDD
+
+		JavaRDD<String> inputRDD = sc.textFile("user.txt");
+
+		JavaRDD<String> res = inputRDD.distinct();
+	[java]
+
+
+
+	[java]
+		//Create an RDD of integers containing the values {1, 2, 3, 3}
+		//Create a new RDD containing only the distinct values appearing in the “input” RDD
+
+		List<Integer> list = Arrays.asList(1,2,3,3);
+		JavaRDD<Integer> inputRDD = sc.parallelize(list);
+
+		JavaRDD<Integer> resRDD = inputRDD.distinct();
+	[java]
+
+
+
+
+	sample()
+	````````
+		Goal
+		The sample transformation is applied on one single RDD and returns a new RDD containing a random sample of the elements (values) of the “input” RDD
+		
+		Method
+		The sample transformation is based on the JavaRDD<T> sample(boolean withReplacement, double fraction) method of the JavaRDD<T> class
+			▪withReplacement specifies if the random sample is with replacement (true) or not (false)
+			▪fraction specifies the expected size of the sample as a fraction of the “input” RDD's size (values in the range [0, 1])
+
+
+
+	[java]
+		//Create an RDD from a textual file containing a set of sentences
+		//Each line of the file contains one sentence
+		//Create a new RDD containing a random sample of sentences
+			//Use the “without replacement” strategy
+			//Set fraction to 0.2 (i.e., 20%)
+
+		JavaRDD<String> input = sc.textFile("file.txt");
+
+		JavaRDD<String> res = input.sample(false, 0.2);
+	[java]
+
+
+	[java]
+		//Create an RDD of integers containing the values {1, 2, 3, 3}
+		//Create a new RDD containing a random sample of the input values
+			//Use the “replacement” strategy
+			//Set fraction to 0.2
+
+		List<Integer> list = Arrays.asList(1,2,3,3);
+		JavaRDD<Integer> inputRDD = sc.parallelize(list);
+
+		JavaRDD<Integer> res = inputRDD.sample(true, 0.2);
+	[java]
+
+
+
+
+
+
+Set Transformations:
+Spark provides also a set of transformations that operate on "two input RDDs" and return "a new RDD"
+	Some of them implement standard set transformations
+		Union
+		Intersection
+		Subtract
+		Cartesian
+
+
+All these transformations have
+Two input RDDs
+▪One is the RDD on which the method is invoked
+▪The other RDD is passed as parameter to the method
+One output RDD
+All the involved RDDs have the same data type when union, intersection, or subtract are used
+“Mixed” data types can be used with the cartesian transformation
+
+
+
+	union()
+	``````
+		The union transformation is based on the JavaRDD<T> union(JavaRDD<T> secondInputRDD) method of the JavaRDD<T> class
+		Duplicates elements are not removed
+		▪This choice is related to optimization reasons
+		▪Removing duplicates means having a global view of the whole content of the two input RDDs
+		▪Since each RDD is split in partitions that are stored in different nodes of the cluster, the contents of all partitions should be “shared” to remove duplicates  A very expensive operation
+
+		If you really need to union two RDDs and remove duplicates you can apply the distinct() transformation on the output of the union() transformation
+
+
+
+	intersection()
+	```````````
+		The intersection transformation is based on the JavaRDD<T> intersection(JavaRDD<T> secondInputRDD) method of the JavaRDD<T> class
+
+
+
+	subtract()
+	````````
+		The subtract transformation is based on the JavaRDD<T> subtract(JavaRDD<T> secondInputRDD) method of the JavaRDD<T> class
+		The result contains the elements appearing only in the RDD on which the subtract method is invoked and not in the RDD passed as parameter
+		In this transformation the two input RDDs play different roles
+
+
+	cartesian()
+	`````````
+		The cartesian transformation is based on the JavaPairRDD<T, R> cartesian(JavaRDD<R> secondInputRDD) method of the JavaRDD<T> class
+		The two “input” RDDs can have a different data type
+		The returned RDD is an RDD of pairs (JavaPairRDD) containing all the combinations composed of one element of the first input RDD and the second input RDD
+
+
+	[java]
+		//Create two RDDs of integers
+			//inputRDD1 contains the values {1, 2, 3}
+			//inputRDD2 contains the values {3, 4, 5}
+		
+		//Create three new RDDs
+			//outputUnionRDD contains the union of inputRDD1 and inputRDD2
+			//outputIntersectionRDD contains the intersection of inputRDD1 and inputRDD2
+			//outputSubtractRDD contains the result of inputRDD1 \ inputRDD2
+			//outputCartesianRDD contains the result of inputRDD1 * inputRDD2
+
+		List<Integer> input1 = Arrays.asList(1,2,3);
+		List<Integer> input2 = Arrays.asList(3,4,5);
+		List<String> str = Arrays.asList("A", "B");
+		JavaRDD<Integer> rdd1 = sc.parallelize(input1);
+		JavaRDD<Integer> rdd2 = sc.parallelize(input2);
+		JavaRDD<String> rdd3 = sc.parallelize(str);
+
+		JavaRDD<Integer> unionRDD = rdd1.union(rdd2);
+		JavaRDD<Integer> intersectRDD = rdd1.intersection(rdd2);
+		JavaRDD<Integer> subtract = rdd1.subtract(rdd2);
+
+		JavaPairRDD<Integer, Integer> cartesian = rdd1.cartesian(rdd2);
+		JavaPairRDD<Integer, String> cartesian2 = rdd1.cartesian(rdd3);
+	[java]
+
+
+
+
+
+
+
+
+
+
+Action:
+-------------------------------------
+	collect()
+	```````
+		The collect action returns a local Java list of objects containing the same objects of the considered RDD
+
+
+
+	[java]
+		//Create an RDD of integers containing the values {1, 2, 3, 3}
+		//Retrieve the values of the created RDD and store them in a local Java list that is instantiated in the Driver
+
+		List<Integer> mList = Arrays.asList(1,2,3,3);
+		JavaRDD<Integer> inputRDD = sc.parallelize(mList);
+
+		List<Integer> rddList  = inputRDD.collect();
+	[java]
+
+
+
+	count()
+	``````
+		Goal
+			Count the number of elements of an RDD
+		
+		Method
+			The count action is based on the long count() method of the JavaRDD<T> class
+
+
+
+	[java]
+		//Consider the textual files “document1.txt” and “document2.txt”
+		//Print the name of the file with more lines
+
+		JavaRDD<String> file1 = sc.textFile("document1.txt");
+		JavaRDD<String> file2 = sc.textFile("document2.txt");
+
+		long size1 = file1.count();
+		long size2 = file2.count();
+
+		if(size1 > size2){
+			System.out.println("document1 is bigger");
+		} else {
+			System.out.println("document2 is bigger");
+		}
+
+	[java]
+
+
+
+	countByValue()
+	`````````````
+		Goal
+		The countByValue action returns a local Java Map object containing the information about the number of times each element occurs in the RDD
+		
+
+		Method
+		The countByValue action is based on the java.util.Map<T, java.lang.Long> countByValue() method of the JavaRDD<T> class
+
+
+	[java]
+		//Create an RDD from a textual file containing the first names of a list of users
+		//Each line contain one name
+		//Compute the number of occurrences of each name and “store” this information in a local variable of the Driver
+
+		JavaRDD<String> input = sc.textFile("file.txt");
+		java.util.Map<String, java.lang.Long> map = input.countByValue();
+	[java]
+
+
+
+
+
+	take()
+	``````
+
+	[java]
+		//Create an RDD of integers containing the values {1, 5, 3, 3, 2}
+		//Retrieve the first two values of the created RDD and store them in a local Java list that is instantiated in the Driver
+
+		List<Integer> mList = Arrays.asList(1,5,3,3,2);
+		JavaRDD<Integer> inputRDD = sc.parallelize(mList);
+
+		List<Integer> newList = inputRDD.take(2);
+	[java]
+
+
+
+	first()
+	`````
+
+
+		!The only difference between first() and take(1) is given by the fact that
+first() returns a single element of type T
+▪The returned element is the first element of the RDD
+take(1) returns a list of elements containing one single element of type T
+▪ The only element of the returned list is the first element of the RDD
+
+
+
+
+	top()
+	`````
+
+	[java]
+		//Create an RDD of integers containing the values {1, 5, 3, 3, 2}
+		//Retrieve the top-2 greatest values of the created RDD and store them in a local Java list that is instantiated in the Driver
+
+		List<Integer> mList = Arrays.asList(1,5,3,3,2);
+		JavaRDD<Integer> inputRDD = sc.parallelize(mList);
+
+		List<Integer> biggest  = inputRDD.top(2);
+	[java]
+
+
+
+	takeordered()
+	```````````
+
+
+
+	takeSample()
+	```````````
+
+	[java]
+		//Create an RDD of integers containing the values {1, 5, 3, 3, 2}
+		//Retrieve randomly, without replacement, 2 values from the created RDD and store them in a local Java list that is instantiated in the Driver
+
+		// Create an RDD of integers. Load the values 1, 5, 3, 3,2 in this RDD
+		List<Integer> inputList = Arrays.asList(1, 5, 3, 3, 2);
+		JavaRDD<Integer> inputRDD = sc.parallelize(inputList);
+		// Retrieve randomly two elements of the inputRDD and store them in
+		// a local Java list
+		List<Integer> randomValues= inputRDD.takeSample(true, 2);
+	[java]
+
+
+	

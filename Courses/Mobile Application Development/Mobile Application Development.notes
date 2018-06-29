@@ -1,0 +1,787 @@
+Mobile Application Developement
+-------------------------------------------
+[source: Giovanni Malnati, PoliTo]
+
+
+
+01. Introduction to Android
+---------------------------------
+12. Each application consists of one or more of the following components:
+	Activity[for user interaction]
+	Service[no user-based/no ui]
+	ContentProvider
+	BroadcastReciever[gets invoked in specific event/net connection]
+
+Activity:
+	An Activity is a software component that
+		Has a Graphical User Interface
+		Can perform a task inside the application
+		Extends the class "android.app.Activity"
+
+	An application is composed of one or more activities
+
+
+Service:
+	A service is a component that can run in the background 
+		It does not provide a user interface
+
+	Usually services are used to perform long tasks
+		A service could play music while the user is using another application
+		A service could gather network data without blocking the user interaction with another activity
+
+	A service is a subclass of "android.app.Service"
+
+
+ContentProvider:
+	A content provider manages application data
+		Data can be stored in the file system, in a database, on the web, …
+
+	It implements a set of standard methods that allow other applications to fetch and to store data handled by the current application
+		Other applications do not call its method directly, but they interact via a "content resolver"
+
+	A Content Provider is a subclass of "android.content.ContentProvider"
+
+
+BroadcastReciever:
+	A Broadcast Receiver is a component which "waits" for messages
+		Some messages are created by the Operating System
+			For example, whenever the display is turned off, when the battery is low …
+		Applications can produce messages, too
+			For example, when a data transfer is completed
+
+	A broadcast receiver does not have a Graphical User Interface, but it can generate notifications in the status bar
+		To notify the user that a particular message is detected
+
+	A Broadcast Receiver is a subclass of "android.content.BroadcastReceiver"
+
+
+
+
+
+Layout:
+-------------
+If you create a hierarchy of views via code, all methods that refer to positions/length/size use pixels as measure unit 
+
+	Dimensions:
+	``````````
+		Pixels (px)
+		Inches (in)
+		Millimeters (mm)
+		Points (pt, 72pt = 1in)
+		Density independent pixel (dp, 160dp = 1in)
+		Scale-independent pixels (sp, 1sp = 1DP * font_zoom_factor)
+
+		Instead of directly enter constants in the layout, you can refer to resources of type "@dimen/_name_"
+			The actual value is specified in an xml file in the "./res/values" folder 
+			Increase flexibility in case of dependencies on other factors (themes/language/culture)
+
+
+			res/layout/view.xml										res/values/dim.xml
+				<LinearLayout …>										<resources>
+				  <TextView												<dimen name="tv_h">25dp</dimen>
+				    android:layout_width="@dimen/tv_w"					<dimen name="tv_w">150dp</dimen>
+				    android:layout_height="@dimen/tv_h" 			</resources>
+				    />													
+				</LinearLayout>
+
+
+
+	Types:
+	``````
+		LinearLayout
+		RelativeLayout
+		AbsoluteLayout
+		TableLayout
+		FrameLayout
+		ScrollView
+
+
+
+
+--------------------------------------------------
+Widgets:
+--------------------------------------------------
+The View class:
+`````````````
+	The "View" class is the basic building block to create UI components
+		It spans over a rectangular area of the screen, it is responsible of drawing its appearance and handling the associated events
+		It is the base class of the widgets that are used to create interactive UI components (buttons, text fields, ...)
+
+	The "ViewGroup" subclass is the base class for layouts
+		Invisible containers which manage other views (or other groups of views) and organize their layout on the screen
+		It relies on "ViewGroup.LayoutParams" inner class (and its subclasses) to express constraints on how the managed views are to be laid out
+
+
+Views:
+`````
+	All views in a window are placed in a single tree
+		It can be described inside one or more XML files
+	
+	The most common operations on views allow you to configure
+		"Properties": all properties that are known before compiling the application can be set in the layout resource file
+		"Focus": you can manually set the focus to a specific view by calling its method <requestFocus()> 
+		"Listener": notify that an interesting action has been done (e.g. pressing a button)
+		"Visibility": it is possible to show or hide a view by using the <setVisibility(int)> method
+
+
+TextView element:
+```````````````
+	Draws text on the screen
+	It derives from View and is located in the package android.widget
+	Inherits the attributes of the View object
+		Width, height, padding, and visibility
+	The tag <TextView> is the XML layout element used to display text on the screen
+		The "android:text" attribute allows you to set the text, which can also be defined as a resource in the strings.xml file
+
+	[xml]
+		<TextView
+			android:id="@+id/TextView02" 
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" 
+			android:text="@string/sample_text" />
+	[xml]
+
+
+	Details:
+	---------
+		To create this component via code:
+		1. Instantiate a "TextView" object by passing it an appropriate context as a parameter
+		2. Configure its properties, by invoking appropriate setter methods (such as <setText(...)>)
+		3. Connect the item to the view hierarchy
+			Via the setContentView(...) method 
+
+		[java]
+			public void onCreate(Bundle savedInstanceState) {
+		     	super.onCreate(savedInstanceState);
+		     	TextView tv = new TextView(this);
+		     	tv.setText("Hello, Android");
+		     	setContentView(tv);
+			}
+		[java]
+
+
+		The number of characters displayed by a "TextView" is configured through the attribute "ems". "em" is a measure unit used in the printing industry, approximately equal to the width of the letter "M" in font "Gill Sans MT"
+		You can also, respectively, set the maximum and the minimum size using the attributes "maxEms" and "minEms"
+		The height of a "TextView" is configured in terms of lines, through the attribute lines
+		It is possible to define the minimum and maximum height, using the attributes "minLines" and "maxLines"
+		You can avoid the truncation of text, enabling the attribute "ellipsize", which replaces the excess characters with "..."
+
+		The "AutoLink" attribute allows you to automatically create hyperlinks out of URL
+		The text can contain the following data type
+			none: disables all links
+			web: enables URL links to web pages
+			email: creates a link to the e-mail client, putting the value of the TextView as the recipient
+			phone: creates a link with the dialer, setting as the number to call the value of the TextView
+			map: enables the link to the maps application, showing the location of the address set in the 			TextView
+			all: Enables all links
+			If you want to see the data type highlighted, but you do not want to associate an action to the link, you can set the property "linksClickable = false"
+
+
+EditText element:
+```````````````
+	The "EditText" control derives from TextView and allows a user to edit the text
+	By default, pressing on the control, a context menu is shown which provides the following functionalities:
+		. Copy: cut and paste text
+		. Change: the input method
+		. Add: a word to the user or the most used words dictionary 
+		. Select: some or all of the text. This functionality is also accessible via code respectively using <setSelection(...)> and <selectAll()> methods 
+		. Hint:  allows to configure a default text that is deleted when the user selects the field
+		. Editable: if set to false, the user can not modify the text field
+
+
+	Auto-completion:
+		The user can be helped in the compilation of a form, thanks to auto-completion
+		The auto-completion is enabled only in certain situations and do not pose constraints on the text that the user can enter
+		
+		There are two types of controls:
+			. AutoCompleteTextView: the user begins to type a string that matches a word contained in a list provided by the developer, the user can choose to complete the word by clicking on the suggestion
+			. MultiAutoCompleteTextView: allows the user to get a hint on the single word entered instead of the whole text
+
+		To provide a list of suggested words, use an object of type <ArrayAdapter <String>>
+		Its constructor receives as input
+			1. An appropriate context
+			2. The identifier of a layout resource to be used to present the suggested word
+			3. An array of strings
+
+		[java]
+			final String[] COLORS = 
+					{ "red", "green", "orange", "blue", "purple", "black", "yellow", "cyan"};
+			
+			ArrayAdapter<String> adapter = 
+					new ArrayAdapter<String>(getApplicationContext(),
+						android.R.layout.simple_dropdown_item_1line, COLORS);
+			AutoCompleteTextView text = 
+					(AutoCompleteTextView) findViewById(R.id.AutoCompleteTextView01); 
+			text.setAdapter(adapter);
+		[java]
+
+
+		When using the "MultiAutoCompleteTextView" control,  you must also define a way to split words, using <setTokenizer(...)>
+		You can also create your own tokenizer by implementing the interface "MultiAutoCompleteTextView.Tokenizer"
+		The layout resource associated with the "AutoCompleteTextView" control can have the following properties
+			. completionThreshold: indicates after how many characters the auto-completion is enabled (default value: 2)
+			. completionHint: description that helps the auto completion
+
+
+	Constraining the input data:
+		The Android SDK provides several classes implementing the "InputFilter" interface, that allow you to constrain the text entered in an "EditText" control. For example, you can require all the letters to be in UPPERCASE format and the text to have a limited length
+
+		You can create custom filters by implementing the "InputFilter" interface, consisting of a single method:
+			[java]
+				CharSequence filter(CharSequence source, 
+										int start, 
+										int end, 
+										Spanned dest, 
+										int dstart, 
+										int dend);
+
+				final EditText text_filtered =(EditText) findViewById(R.id.input_filtered);
+				text_filtered.setFilters(
+								new InputFilter[] { 
+									new InputFilter.AllCaps(),
+										new InputFilter.LengthFilter(2)
+								}
+							);
+			[java]
+
+
+
+
+Spinner:
+```````
+	A view that displays one child at a time and lets the user pick among them
+	Data can be set  
+		1. Using an <Adapter(...)> object 
+		2. Directly from the layout, passing to the entries property an array of resources
+
+	[xml]
+		<Spinner android:id="@+id/Spinner01" 
+				android:layout_width="wrap_content" 
+				android:layout_height="wrap_content" 
+				android:entries="@array/colors"
+				android:prompt="@string/prompt" />
+	[xml]
+
+	To access the value of the selected text using the "Spinner" control, you first need to get the TextView object and then the associated text
+
+	[java]
+		final Spinner spin = (Spinner) findViewById(R.id.Spinner01); 
+		TextView text_sel = (TextView)spin. getSelectedView(); 
+		String selected_text = text_sel.getText();
+	[java]
+
+
+
+Button:
+``````	
+	The "android.widget.Button" class provides the implementation of basic buttons
+	Ability to associate a text to the control, such as "ok", "cancel", "submit"
+	In the resource file android.R.string, you can find the appropriate string values
+
+	[xml]
+		<Button
+			android:id="@+id/basic_button" 
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" 
+			android:text="Basic Button" />
+	[xml]
+
+
+	You can associate an event to a button click
+		1. Via <setOnClickListener(…)> method
+		2. An object that implements the interface  <View.OnClickListener (…)> is the input
+		3. Override of the <onClick(…)> method
+
+		[java]
+			setContentView(R.layout.buttons);
+			final Button basic_button = 
+					(Button) findViewById(R.id.basic_button); 
+			
+			basic_button.setOnClickListener(
+					new View.OnClickListener() {
+						public void onClick(View v) {
+							Toast.makeText(ButtonsActivity.this,"Button clicked", Toast.LENGTH_SHORT).show();
+						}
+					});
+		[java]
+
+	The "ImageButton" control allows to replace the text with an image. Specify the "android:src" property of the resource, inserting a reference to an image
+
+		[xml]
+			<ImageButton 
+				android:layout_width="wrap_content" 
+				android:layout_height="wrap_content"
+				android:id="@+id/image_button" 
+				android:src="@drawable/droid" />
+		[xml]
+
+
+
+CheckBox:
+`````````
+	The "CheckBox" control allows the user to select more elements. You can associate a textual resource that is displayed on the right side of the control
+
+	[xml]
+		<CheckBox 
+			android:id="@+id/checkbox" 
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" 
+			android:text="Check me?" />
+	[xml]
+
+	The "OnClickListener" is identical to the one of the button control
+
+
+ToggleButton:
+````````````
+	ToggleButton, differently from CheckBox, associates a text that changes on the basis of the current state (ON or OFF)
+	Texts are configured via the "textOn" and "textOff" properties
+
+	[xml]
+		<ToggleButton 
+			android:id="@+id/toggle_button" 
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" 
+			android:text="Toggle" 
+			android:textOff="Disabled" 
+			android:textOn="Enabled" />
+	[xml]
+
+
+
+
+RadioGroup & RadioButton:
+```````````````````````
+	The RadioButton control is similar to a CheckBox and it is associated with a text label and a state (ON/OFF)
+	The RadioGroup allows to group a set of RadioButtons, in such a way that only one of these may be ON
+
+	[xml]
+		<RadioGroup
+		     	android:id="@+id/RadioGroup01" 
+		     	android:layout_width="wrap_content"
+		     	android:layout_height="wrap_content">
+		 
+			   <RadioButton
+					android:id="@+id/RadioButton01" 
+					android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" 
+					android:text="Option 1"/>
+
+			    <RadioButton
+					android:id="@+id/RadioButton02"  
+			     	... />
+
+		</RadioGroup>
+	[xml]
+
+
+	It is possible to associate an event to the selection of an option 
+	Call the <setOnCheckedChangeListener(...)> method of the RadioGroup 
+		It takes as input a class that implements the interface RadioGroup. <OnCheckedChangeListener(...)>
+			Overrides <OnCheckedChanged(...)> method
+
+	[java]
+		final RadioGroup group = (RadioGroup)findViewById(R.id.RadioGroup01); 
+		final TextView tv = (TextView)findViewById(R.id.TextView01);
+
+		group.setOnCheckedChangeListener(
+ 			 new RadioGroup.OnCheckedChangeListener() {
+      			public void onCheckedChanged(RadioGroup group, int checkedId) {
+        				if (checkedId != -1) {
+          				RadioButton rb = (RadioButton) findViewById(checkedId);
+          				//perform some action based on the selected button…
+        				}
+       			}
+       		});
+	[java]
+
+
+
+
+Progress indicators:
+````````````````
+	They are used to show the user that the application is carrying out some action
+	The standard progress bar has a circular shape and it is animated, it is used for actions whose duration is not known
+	3 sizes:
+		progressBarStyleSmall
+		progressBarStyleMedium  	(default)
+		progressBarStyleLarge
+
+	[xml]
+		<ProgressBar 
+			android:id="@+id/progress_bar" 
+			android:layout_width="wrap_content" 	
+			android:layout_height="wrap_content" />
+	[xml]
+
+	Progress can be shown also as a horizontal bar to make the user aware of the expected duration of a task (e.g. download indicator). Can also be used for actions whose duration is not known (indeterminate=true) or a way to indicate percentages (by setting the attribute max to 100)
+
+	[xml]
+		<ProgressBar 
+			android:id="@+id/progress_bar" 
+			style="@android:style/Widget.ProgressBar.Horizontal"
+			android:layout_width="fill_parent" 	
+			android:layout_height="wrap_content" 
+			android:max="100" />
+	[xml]
+
+	It is possible to set the indicator value via code
+
+	[java]
+		mProgress = (ProgressBar) findViewById(R.id.progress_bar); 
+		mProgress.setProgress(75);
+	[java]
+
+
+	The horizontal progress bar can be inserted in the title bar of the application
+
+	[java]
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS); 
+		requestWindowFeature(Window.FEATURE_PROGRESS); 
+		setContentView(R.layout.indicators); 
+		setProgressBarIndeterminateVisibility(true); 
+		setProgressBarVisibility(true);
+		setProgress(5000);
+	[java]
+
+
+
+
+SeekBar:
+```````
+	It is possible to associate a listener to the control, implementing the <OnSeekBarChangeListener(…)> interface
+	Override the <onProgressChanged(…)> method
+	Its boolean parameter (fromTouch) allows to discriminate if the bar selection has been done by the user or via code
+	The "SeekBar" parameter allows to set the value of a second progress bar
+
+	[xml]
+		<SeekBar 
+			   android:id="@+id/seekbar1" 	
+			   android:layout_height="wrap_content" 
+			   android:layout_width="240px"
+			   android:max="500" />
+	[xml]
+
+	[java]
+		SeekBar seek = (SeekBar) findViewById(R.id.seekbar1);        
+    		seek.setOnSeekBarChangeListener(
+        		new SeekBar.OnSeekBarChangeListener() { 
+            		public void onProgressChanged(
+                		SeekBar seekBar, int progress,boolean fromTouch) { 
+                			((TextView)findViewById(R.id.seek_text)).setText("Value: "+progress);
+                			seekBar.setSecondaryProgress((progress+seekBar.getMax())/2);
+     				}
+     			});
+	[java]
+
+
+
+
+RatingBar:
+`````````
+	The RatingBar allows the user to express an opinion or view it
+	This bar is based on the paradigm of 5 stars, you can configure the number of stars using the attribute "numStars"
+	You can also define an increase, through the attribute "stepSize" 
+
+	[xml]
+		<RatingBar 
+			android:id="@+id/ratebar1" 
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" 
+			android:numStars="4" 
+			android:stepSize="0.25" />
+	[xml]
+
+
+	You can associate a listener (<setOnRatingBarChangeListener(…)> method), implementing the <OnRatingBarChangeListener(…)> interface
+		Overrides the <onRatingChanged(…)> method
+
+	[java]
+		RatingBar rate = (RatingBar) findViewById(R.id.ratebar1); 
+		rate.setOnRatingBarChangeListener(
+			new RatingBar.OnRatingBarChangeListener() { 
+		      public void onRatingChanged(
+		      	RatingBar ratingBar, float rating, boolean fromTouch) { 
+		      		((TextView)findViewById(R.id.rating_text)).setText("Rating: "+ rating);
+		   		}
+			});
+	[java]
+
+
+
+
+
+Chronometer:
+```````````
+	The Chronometer control implements a timer
+		Methods <start()>, <stop()>
+	The <setBase(long)> method allows to set from which point in time to start the counter
+	Associate a listener, implementing the <Chronometer.OnChronometerTickListener(...)> interface
+
+	[xml]
+		<Chronometer 
+			   android:id="@+id/Chronometer01"   
+			   android:layout_width="wrap_content"    
+			   android:layout_height="wrap_content"            
+			   android:format="Timer: %s" />
+	[xml]
+
+	[java]
+		final Chronometer timer = (Chronometer)findViewById(R.id.Chronometer01);
+		long base = timer.getBase(); 
+		Log.d(ViewsMenu.debugTag, "base = "+ base);
+		timer.setBase(0); 
+		timer.start();
+
+	[java]
+
+
+DigitalClock & AnalogClock:
+``````````````````````
+	The controls DigitalClock and AnalogClock allow you to show the time in an application, in a digital and analog format
+
+	[xml]
+		<DigitalClock 
+			android:id="@+id/DigitalClock01"    
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" />
+
+		<AnalogClock 
+			android:id="@+id/AnalogClock01"   
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" />
+	[xml]
+
+
+
+
+Option menu:
+```````````
+	The option menus offer several features to the user
+	They can contain icons, keyboard shortcuts
+	Override the method <onCreateOptionsMenu()> in your own activity
+	For each menu item you can associate a different activity
+	You can add a sub-menu, where the elements are "checkable"
+	You can associate an event when an item in the menu is selected, by implementing the <onOptionsItemSelected(...)> method 
+
+	[java]
+		public boolean onCreateOptionsMenu( android.view.Menu menu) { 
+   			super.onCreateOptionsMenu(menu); 
+   			menu
+   				.add("Forms")
+      			.setIcon(android.R.drawable.ic_menu_edit)
+      			.setIntent(new Intent(getApplicationContext(), FormsActivity.class)); 
+			…
+		return true;
+		}
+
+		SubMenu style_choice = menu.addSubMenu("Style") 
+		   	.setIcon(android.R.drawable.ic_menu_preferences);
+
+		style_choice.add(style_group, light_id, 1, "Light").setChecked(isLight);
+		style_choice.add(style_group, dark_id, 2,"Dark").setChecked(!isLight);
+		style_choice.setGroupCheckable(style_group, true, true);
+	[java]
+
+
+
+Context menu:
+````````````
+	This type of menu appears on the screen when a user performs a long click on a specific <view(View)>
+	First, in the <onCreate(...)> method of the activity, associate a context menu to the view, through the <registerForContextMenu(View v)> method 
+	In the activity, implement the <OnCreateContextMenu(...)> method 
+	Finally, overwrite the <onContextItemSelected(...)> method, which will perform an action after the selection of a menu item
+
+	[java]
+		public void onCreate(Bundle b) { 
+		  …
+		  Chronometer timer = (Chronometer)findViewById(R.id.Chronometer01); 
+		  registerForContextMenu(timer); 
+		}
+
+		public void onCreateContextMenu( 
+		   ContextMenu menu, View v, ContextMenuInfo menuInfo) { 
+		   	super.onCreateContextMenu(menu, v, menuInfo);
+
+		if (v.getId() == R.id.Chronometer01) { 
+		   getMenuInflater().inflate(R.menu.timer_context, menu);   
+		   menu.setHeaderIcon(android.R.drawable.ic_media_play)
+		      .setHeaderTitle("Timer controls");
+		   }
+		}
+
+		public boolean onContextItemSelected(MenuItem item) { 
+		   super.onContextItemSelected(item); 
+		   boolean result = false; 
+		   Chronometer timer = (Chronometer)findViewById(R.id.Chronometer01); 
+
+		   switch (item.getItemId()){
+		      case R.id.stop_timer: 
+		         timer.stop();
+		         result = true;
+		         break; 
+		   …
+		   } 
+		   return result;
+		}
+
+	[java]
+
+
+
+
+
+Event handling:
+`````````````
+	The touch mode of the screen can be:
+		. On: when active, items such as TextEdit acquire the focus, others notify that an action must be carried out
+		. Off: in this state, you can still change focus among objects
+
+	You can navigate between items using arrow keys, trackball, selecting and sending buttons 
+	You can associate a listener on the main view of the activity to understand when the touch mode changes
+		Via the <addOnTouchModeChangeListener(...)> method of the "android.view.ViewTreeObserver" class 
+			This object listens to the events of the associated view and its children ones
+
+	[java]
+		View all = findViewById(R.id.events_screen); 
+		ViewTreeObserver vto = all.getViewTreeObserver(); 
+		vto.addOnTouchModeChangeListener(
+		   new ViewTreeObserver.OnTouchModeChangeListener() {
+		      public void onTouchModeChanged(boolean isInTouchMode) { 
+		         events.setText("Touch mode: " + isInTouchMode);
+		      }
+			}
+		);
+	[java]
+
+
+	The "ViewTreeObserver" class offers other three events:
+		. PreDraw: the application receives a notification before the view and its children are drawn
+			Call the <addOnPreDrawListener()> method and implement the <ViewTreeObserver.OnPreDrawListener> interface
+		
+		. GlobalLayout: the application receives a notification when the view and its children layout change, including also changes in visibility
+			Call the <addGlobalLayoutListener()> method and implement the <ViewTreeObserver.OnGlobalLayoutListener> interface 
+		
+		. GlobalFocusChange: the application receives a notification when the focus within the view and its children changes
+			Call the <addOnGlobalFocusListener()> method and implement the <ViewTreeObserver.OnGlobalFocusListener> interface 
+
+	A context menu appears when you press and hold the finger on the screen
+	You can handle this event in a different way
+		Call the <setOnLongCLickListener(...)> view method and implement the <View.OnLongClickListener> interface 
+			Overrides the <OnLongClick> method, acts on the view associated with the event
+
+		[java]
+			Button long_press = (Button)findViewById(R.id.long_press); 
+			long_press.setOnLongClickListener(
+				new View.OnLongClickListener() {
+				   public boolean onLongClick(View v) { 
+				      events.setText("Long click: " + v.toString()); 
+				      return true;
+				   }
+				});
+		[java]
+
+
+	You can handle the event of the change of focus also on a specific view
+	Use the <setOnFocusChangeListener> method
+		Implement the <View.OnFocusChangeListener> interface
+		Overrides the method <onFocusChange (...)>
+
+
+
+
+Dialog box:
+``````````
+	Dialog boxes are used by activities for
+		Organize information
+		React to user-driven events
+
+	Types of windows
+		Dialog
+		Alert Dialog
+		CharacterPickerDialog
+		DatePickerDialog
+		ProgressDialog
+		TimePickerDialog
+
+	Each Dialog component has to be defined within the activity in which it  should be used
+		The method <showDialog()> is used to show the window
+		The method <dismissDialog()> stops the display of the window and put it in the Dialog pool of the activity
+			If the <showDialog()> method is invoked, the window is taken by the Dialog pool
+		The <removeDialog()> method removes a Dialog object from the Dialog pool of the activity
+
+
+	Life Cycle 
+		. Definition and execution: 
+		A unique Integer identifier is associated to each Dialog
+		When you call the method <showDialog(...)>, you have to pass this identifier
+		<OnCreateDialog()> method is called (only at creation), which returns the appropriate Dialog object, you can ovverride of this method
+		
+		. Initialization and execution:
+		The dialog pool preserves the state of each window, so when one of them is resumed, it must be initialized
+		The initialization is done overriding the <OnCreateDialog()> method, that is called every time you call the <showDialog(...)> method
+		
+		. Closure
+		Call the <dismissDialog(...)> method, passing the ID of the appropriate window
+
+		. Removal from the dialog pool of the activity
+		Call the <removeDialog(...)> method, passing the ID of the appropriate window
+
+
+	Custom dialog box
+		You can create custom dialog boxes, starting from existing ones
+		For example, you can modify an AlertDialog window; using the <AlertDialog.Builder> method you can override its layout
+			1. Design a custom resource layout in the AlertDialog
+			2. Define the identifier of the custom Dialog in the activity
+			3. Change the <OnCreateDialog ()> method to create and return the appropriate custom Dialog
+			4. Display the window via the <showDialog(...)> method 
+
+		[java]
+			@Override
+			public Dialog onCreateDialog(int id, Bundle b) {
+			    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			    LayoutInflater inf= getLayoutInflater();
+			    builder
+			        .setView(inf.inflate(R.layout.my_dialog, null))
+			        .setPositiveButton(R.string.signin,
+			        	new DialogInterface.OnClickListener() {
+			             public void onClick(DialogInterface dialog, int id){
+			                   //...
+			             }
+			          })
+			        .setNegativeButton(R.string.cancel, 
+			           new DialogInterface.OnClickListener() {
+			              public void onClick(DialogInterface dialog, int id){
+			                   //...
+			               }
+			           });      
+			    return builder.create();
+			}
+		[java]
+
+
+
+
+Styles and Themes:
+````````````````
+	All components can be decorated with styles
+	To apply a style resource to a component,  use the style attribute of the resource
+
+	[xml]
+		<TextView 
+			style="@style/padded_italics" 
+			android:layout_width="fill_parent" 
+			android:layout_height="wrap_content" 
+			android:text="Italic w/parent color" />
+	[xml]
+
+	A theme is a collection of one or more styles, but instead of being applied to a specific view, it is applied to all views in the activity
+	The themes can be set via code by calling one or more times the <setTheme(...) method, that takes as input a resource of type style
+	Alternatively, you can set the theme property of the Activity tag in the manifest file
+
+	[xml]
+		<activity 
+			android:name=".myactivityname" 
+			android:label="@string/app_name"
+			android:theme="@style/myAppIsStyling">
+	[xml]

@@ -1,0 +1,49 @@
+﻿Mobile Application Development
+Exam Duration: 1:30', usually 4 questions
+Answers are according to the "Notes Repack"
+
+Describe Activity lifecycle -> #6, #6.1
+Describe fragment lifecycle, both static and dynamic
+Describe service lifecycle, both started and bound
+Describe resources and how they are involved in app responsiveness
+
+Q: What are the main problems that a custom view has to care about?
+A: Any visual component has two main responsibilities
+1. Negotiate with its container some space on the screen
+2. Draw the custom view in that space
+
+Describe the User Centered Design process in application development
+Describe the pipeline of the Canvas object
+Describe the pipeline of OpenGL Shader -> #15
+Describe ARC
+Describe MVC Pattern
+
+controller view ( lifecycle )
+frame
+synchronization
+constructs
+adapters
+
+
+iOS
+Describe iOS applications lifecycle
+Describe memory management in the iOS framework
+Describe difference between weak and strong allocation in iOs
+
+
+Exam 2018/06/25 – Type A
+A1: Describe lifecycle of Service
+A2: Describe how Kotline Programming Language affect developing android application.
+A3: Describe Looper
+A4: Describe Adapter and management of Collection
+
+
+Exam 2018/06/25 – Type B
+B1: Describe Android Activity
+B2: Describe Kotlin features
+B3: Describe Asynctask generic class and its role in counccurent andriod
+B4: ViewModel and role of recycling data collection
+
+
+#NOTE
+learn figures, charts or processes very well

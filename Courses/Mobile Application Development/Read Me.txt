@@ -1,0 +1,6 @@
+The “notes repack” simply consists in a slides repack removing useless parts for theorical exam an having contents displayed in a more readable way.
+
+NOTES:
+-	the static fragment lifecycle is missing, check it on the slides because it is often asked;
+-	the last part on UX is incomplete, however it is rarely asked;
+-	every year the topics are slightly different, for example the part related to iOS in a.y. 2013-2014 was much larger and jPCT was missing; the topic covered in the current version are related to a.y. 2014-2015
